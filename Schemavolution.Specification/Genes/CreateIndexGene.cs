@@ -5,30 +5,30 @@ using System.Linq;
 using System.Numerics;
 using Schemavolution.Specification.Implementation;
 
-namespace Schemavolution.Specification.Migrations
+namespace Schemavolution.Specification.Genes
 {
-    class CreateIndexMigration : IndexMigration
+    class CreateIndexGene : IndexGene
     {
-        private readonly CreateTableMigration _parent;
-        private readonly ImmutableList<CreateColumnMigration> _columns;
+        private readonly CreateTableGene _parent;
+        private readonly ImmutableList<CreateColumnGene> _columns;
 
         public override string DatabaseName => _parent.DatabaseName;
         public override string SchemaName => _parent.SchemaName;
         public override string TableName => _parent.TableName;
-        public override IEnumerable<CreateColumnMigration> Columns => _columns;
-        internal override CreateTableMigration CreateTableMigration => _parent;
+        public override IEnumerable<CreateColumnGene> Columns => _columns;
+        internal override CreateTableGene CreateTableGene => _parent;
 
-        public CreateIndexMigration(CreateTableMigration parent, IEnumerable<CreateColumnMigration> columns, ImmutableList<Migration> prerequisites) :
+        public CreateIndexGene(CreateTableGene parent, IEnumerable<CreateColumnGene> columns, ImmutableList<Gene> prerequisites) :
             base(prerequisites)
         {
             _parent = parent;
             _columns = columns.ToImmutableList();
         }
 
-        public override IEnumerable<Migration> AllPrerequisites => Prerequisites
-            .Concat(new[] { CreateTableMigration });
+        public override IEnumerable<Gene> AllPrerequisites => Prerequisites
+            .Concat(new[] { CreateTableGene });
 
-        public override string[] GenerateSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph)
+        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
             string indexTail = string.Join("_", Columns.Select(c => $"{c.ColumnName}").ToArray());
             string columnList = string.Join(", ", Columns.Select(c => $"[{c.ColumnName}]").ToArray());
@@ -40,7 +40,7 @@ namespace Schemavolution.Specification.Migrations
             return sql;
         }
 
-        public override string[] GenerateRollbackSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph)
+        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
             string indexTail = string.Join("_", Columns.Select(c => $"{c.ColumnName}").ToArray());
             string[] sql =
@@ -61,16 +61,16 @@ namespace Schemavolution.Specification.Migrations
 
         protected override BigInteger ComputeSha256Hash()
         {
-            return nameof(CreateIndexMigration).Sha256Hash().Concatenate(
+            return nameof(CreateIndexGene).Sha256Hash().Concatenate(
                 Enumerable.Repeat(_parent.Sha256Hash, 1)
                     .Concat(_columns.Select(c => c.Sha256Hash))
                     .ToArray());
         }
 
-        internal override MigrationMemento GetMemento()
+        internal override GeneMemento GetMemento()
         {
-            return new MigrationMemento(
-                nameof(CreateIndexMigration),
+            return new GeneMemento(
+                nameof(CreateIndexGene),
                 new Dictionary<string, string>
                 {
                 },
@@ -83,12 +83,12 @@ namespace Schemavolution.Specification.Migrations
                 });
         }
 
-        public static CreateIndexMigration FromMemento(MigrationMemento memento, IImmutableDictionary<BigInteger, Migration> migrationsByHashCode)
+        public static CreateIndexGene FromMemento(GeneMemento memento, IImmutableDictionary<BigInteger, Gene> genesByHashCode)
         {
-            return new CreateIndexMigration(
-                (CreateTableMigration)migrationsByHashCode[memento.Prerequisites["Parent"].Single()],
-                memento.Prerequisites["Columns"].Select(p => migrationsByHashCode[p]).OfType<CreateColumnMigration>(),
-                memento.Prerequisites["Prerequisites"].Select(p => migrationsByHashCode[p]).ToImmutableList());
+            return new CreateIndexGene(
+                (CreateTableGene)genesByHashCode[memento.Prerequisites["Parent"].Single()],
+                memento.Prerequisites["Columns"].Select(p => genesByHashCode[p]).OfType<CreateColumnGene>(),
+                memento.Prerequisites["Prerequisites"].Select(p => genesByHashCode[p]).ToImmutableList());
         }
     }
 }

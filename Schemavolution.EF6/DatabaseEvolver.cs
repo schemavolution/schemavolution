@@ -16,21 +16,21 @@ namespace Schemavolution.EF6
         private readonly string _databaseName;
         private readonly string _fileName;
         private readonly string _masterConnectionString;
-        private readonly IGenome _migrations;
+        private readonly IGenome _genome;
 
-        public DatabaseEvolver(string databaseName, string fileName, string masterConnectionString, IGenome migrations)
+        public DatabaseEvolver(string databaseName, string fileName, string masterConnectionString, IGenome genome)
         {
             _databaseName = databaseName;
             _fileName = fileName;
             _masterConnectionString = masterConnectionString;
-            _migrations = migrations;
+            _genome = genome;
         }
 
         public void EvolveDatabase()
         {
-            var migrationHistory = LoadMigrationHistory();
+            var evolutionHistory = LoadEvolutionHistory();
 
-            if (migrationHistory.Empty)
+            if (evolutionHistory.Empty)
             {
                 string[] initialize =
                 {
@@ -55,7 +55,7 @@ namespace Schemavolution.EF6
                 ExecuteSqlCommands(initialize);
             }
 
-            var generator = new SqlGenerator(_migrations, migrationHistory);
+            var generator = new SqlGenerator(_genome, evolutionHistory);
 
             var sql = generator.Generate(_databaseName);
             ExecuteSqlCommands(sql);
@@ -63,8 +63,8 @@ namespace Schemavolution.EF6
 
         public void DevolveDatabase()
         {
-            var migrationHistory = LoadMigrationHistory();
-            var generator = new SqlGenerator(_migrations, migrationHistory);
+            var evolutionHistory = LoadEvolutionHistory();
+            var generator = new SqlGenerator(_genome, evolutionHistory);
             var sql = generator.GenerateRollbackSql(_databaseName);
 
             ExecuteSqlCommands(sql);
@@ -87,7 +87,7 @@ namespace Schemavolution.EF6
             }
         }
 
-        private MigrationHistory LoadMigrationHistory()
+        private EvolutionHistory LoadEvolutionHistory()
         {
             var ids = ExecuteSqlQuery($"SELECT database_id FROM master.sys.databases WHERE name = '{_databaseName}'",
                 row => (int)row["database_id"]);
@@ -100,7 +100,7 @@ namespace Schemavolution.EF6
                         LEFT JOIN [{_databaseName}].[dbo].[__MergableMigrationHistory] p
                           ON j.PrerequisiteMigrationId = p.MigrationId
                         ORDER BY h.MigrationId, j.Role, p.MigrationId",
-                    row => new MigrationHistoryRow
+                    row => new EvolutionHistoryRow
                     {
                         Type = LoadString(row["Type"]),
                         HashCode = LoadBigInteger(row["HashCode"]),
@@ -109,18 +109,18 @@ namespace Schemavolution.EF6
                         PrerequisiteHashCode = LoadBigInteger(row["PrerequisiteHashCode"])
                     });
 
-                return MigrationHistory.LoadMementos(LoadMementos(rows));
+                return EvolutionHistory.LoadMementos(LoadMementos(rows));
             }
             else
             {
-                return new MigrationHistory();
+                return new EvolutionHistory();
             }
         }
 
-        private static IEnumerable<MigrationMemento> LoadMementos(
-            IEnumerable<MigrationHistoryRow> rows)
+        private static IEnumerable<GeneMemento> LoadMementos(
+            IEnumerable<EvolutionHistoryRow> rows)
         {
-            var enumerator = new LookaheadEnumerator<MigrationHistoryRow>(rows.GetEnumerator());
+            var enumerator = new LookaheadEnumerator<EvolutionHistoryRow>(rows.GetEnumerator());
             enumerator.MoveNext();
             if (enumerator.More)
             {
@@ -131,23 +131,23 @@ namespace Schemavolution.EF6
             }
         }
 
-        private static MigrationMemento LoadMemento(LookaheadEnumerator<MigrationHistoryRow> enumerator)
+        private static GeneMemento LoadMemento(LookaheadEnumerator<EvolutionHistoryRow> enumerator)
         {
             var type = enumerator.Current.Type;
             var hashCode = enumerator.Current.HashCode;
             var attributes = enumerator.Current.Attributes;
             var roles = LoadRoles(hashCode, enumerator);
 
-            var migrationAttributes = JsonConvert.DeserializeObject<Dictionary<string, string>>(attributes);
-            var memento = new MigrationMemento(
+            var geneAttributes = JsonConvert.DeserializeObject<Dictionary<string, string>>(attributes);
+            var memento = new GeneMemento(
                 type,
-                migrationAttributes,
+                geneAttributes,
                 hashCode,
                 roles);
             return memento;
         }
 
-        private static IDictionary<string, IEnumerable<BigInteger>> LoadRoles(BigInteger hashCode, LookaheadEnumerator<MigrationHistoryRow> enumerator)
+        private static IDictionary<string, IEnumerable<BigInteger>> LoadRoles(BigInteger hashCode, LookaheadEnumerator<EvolutionHistoryRow> enumerator)
         {
             var result = new Dictionary<string, IEnumerable<BigInteger>>();
             do
@@ -167,7 +167,7 @@ namespace Schemavolution.EF6
             return result;
         }
 
-        private static IEnumerable<BigInteger> LoadPrerequisites(BigInteger hashCode, string role, LookaheadEnumerator<MigrationHistoryRow> enumerator)
+        private static IEnumerable<BigInteger> LoadPrerequisites(BigInteger hashCode, string role, LookaheadEnumerator<EvolutionHistoryRow> enumerator)
         {
             do
             {

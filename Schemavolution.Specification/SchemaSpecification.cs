@@ -1,5 +1,5 @@
 ﻿using Schemavolution.Specification.Implementation;
-using Schemavolution.Specification.Migrations;
+using Schemavolution.Specification.Genes;
 using System;
 using System.Collections.Generic;
 
@@ -7,22 +7,22 @@ namespace Schemavolution.Specification
 {
     public class SchemaSpecification : Specification
     {
-        private readonly UseSchemaMigration _migration;
+        private readonly UseSchemaGene _gene;
 
-        internal override IEnumerable<Migration> Migrations => new[] { _migration };
+        internal override IEnumerable<Gene> Genes => new[] { _gene };
 
-        internal SchemaSpecification(UseSchemaMigration migration, MigrationHistoryBuilder migrationHistoryBuilder) :
-            base(migrationHistoryBuilder)
+        internal SchemaSpecification(UseSchemaGene gene, EvolutionHistoryBuilder evolutionHistoryBuilder) :
+            base(evolutionHistoryBuilder)
         {
-            _migration = migration;
+            _gene = gene;
         }
 
         public TableSpecification CreateTable(string tableName)
         {
-            var migration = new CreateTableMigration(_migration, tableName, Prerequisites);
-            MigrationHistoryBuilder.Append(migration);
-            migration.AddToParent();
-            return new TableSpecification(migration, MigrationHistoryBuilder);
+            var gene = new CreateTableGene(_gene, tableName, Prerequisites);
+            EvolutionHistoryBuilder.Append(gene);
+            gene.AddToParent();
+            return new TableSpecification(gene, EvolutionHistoryBuilder);
         }
     }
 }

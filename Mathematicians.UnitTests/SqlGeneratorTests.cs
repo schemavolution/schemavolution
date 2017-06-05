@@ -13,9 +13,9 @@ namespace Mathematicians.UnitTests
         [Fact]
         public void CanGenerateSql()
         {
-            var migrations = new Genome();
-            var migrationHistory = new MigrationHistory();
-            var sql = WhenGenerateSql(migrations, migrationHistory);
+            var genome = new Genome();
+            var evolutionHistory = new EvolutionHistory();
+            var sql = WhenGenerateSql(genome, evolutionHistory);
             sql.Should().Contain(@"CREATE TABLE [Mathematicians].[dbo].[Mathematician](
     [MathematicianId] INT IDENTITY (1,1) NOT NULL,
     CONSTRAINT [PK_Mathematician] PRIMARY KEY CLUSTERED ([MathematicianId]),
@@ -35,9 +35,9 @@ namespace Mathematicians.UnitTests
         [Fact]
         public void GeneratesNoSqlWhenUpToDate()
         {
-            var migrations = new Genome();
-            var migrationHistory = GivenCompleteMigrationHistory(migrations);
-            var sql = WhenGenerateSql(migrations, migrationHistory);
+            var genome = new Genome();
+            var evolutionHistory = GivenCompleteEvolutionHistory(genome);
+            var sql = WhenGenerateSql(genome, evolutionHistory);
 
             sql.Length.Should().Be(0);
         }
@@ -45,12 +45,12 @@ namespace Mathematicians.UnitTests
         [Fact]
         public void CanSaveMigrationHistory()
         {
-            var mementos = GivenMigrationMementos(new Genome());
+            var mementos = GivenGeneMementos(new Genome());
 
-            mementos[0].Type.Should().Be("UseSchemaMigration");
+            mementos[0].Type.Should().Be("UseSchemaGene");
             mementos[0].Attributes["SchemaName"].Should().Be("dbo");
 
-            mementos[1].Type.Should().Be("CreateTableMigration");
+            mementos[1].Type.Should().Be("CreateTableGene");
             mementos[1].Attributes["TableName"].Should().Be("Mathematician");
             mementos[1].Prerequisites["Parent"].Should().Contain(mementos[0].HashCode);
         }
@@ -58,9 +58,9 @@ namespace Mathematicians.UnitTests
         [Fact]
         public void CanUpgradeToANewVersion()
         {
-            var previousVersion = GivenMigrationMementos(new Genome());
-            var migrationHistory = WhenLoadMigrationHistory(previousVersion);
-            var sql = WhenGenerateSql(new MigrationsV2(), migrationHistory);
+            var previousVersion = GivenGeneMementos(new Genome());
+            var evolutionHistory = WhenLoadEvolutionHistory(previousVersion);
+            var sql = WhenGenerateSql(new GenomeV2(), evolutionHistory);
 
             sql.Should().Contain(@"CREATE TABLE [Mathematicians].[dbo].[Field](
     [FieldId] INT IDENTITY (1,1) NOT NULL,
@@ -74,29 +74,29 @@ namespace Mathematicians.UnitTests
         [Fact]
         public void ThrowsWhenDowngradingToAPreviousVersion()
         {
-            var laterVersion = GivenMigrationMementos(new MigrationsV2());
-            var migrationHistory = WhenLoadMigrationHistory(laterVersion);
+            var laterVersion = GivenGeneMementos(new GenomeV2());
+            var evolutionHistory = WhenLoadEvolutionHistory(laterVersion);
 
-            Action generateSql = () => WhenGenerateSql(new Genome(), migrationHistory);
+            Action generateSql = () => WhenGenerateSql(new Genome(), evolutionHistory);
             generateSql.ShouldThrow<InvalidOperationException>();
         }
 
         [Fact]
         public void ThrowsWhenMovingSideways()
         {
-            var laterVersion = GivenMigrationMementos(new Genome());
-            var migrationHistory = WhenLoadMigrationHistory(laterVersion);
+            var laterVersion = GivenGeneMementos(new Genome());
+            var evolutionHistory = WhenLoadEvolutionHistory(laterVersion);
 
-            Action generateSql = () => WhenGenerateSql(new MigrationsV3(), migrationHistory);
+            Action generateSql = () => WhenGenerateSql(new GenomeV3(), evolutionHistory);
             generateSql.ShouldThrow<InvalidOperationException>();
         }
 
         [Fact]
         public void CanGenerateRollbackScript()
         {
-            var previousVersion = GivenMigrationMementos(new MigrationsV2());
-            var migrationHistory = WhenLoadMigrationHistory(previousVersion);
-            var sql = WhenGenerateRollbackSql(new Genome(), migrationHistory);
+            var previousVersion = GivenGeneMementos(new GenomeV2());
+            var evolutionHistory = WhenLoadEvolutionHistory(previousVersion);
+            var sql = WhenGenerateRollbackSql(new Genome(), evolutionHistory);
 
             sql.Should().Contain(@"DROP TABLE [Mathematicians].[dbo].[Field]");
             sql.Should().Contain(@"ALTER TABLE [Mathematicians].[dbo].[Contribution]
@@ -110,33 +110,33 @@ namespace Mathematicians.UnitTests
             dropColumn.Should().BeLessThan(dropTable);
         }
 
-        private MigrationMemento[] GivenMigrationMementos(IGenome migrations)
+        private GeneMemento[] GivenGeneMementos(IGenome genome)
         {
-            var migrationHistory = GivenCompleteMigrationHistory(migrations);
-            return migrationHistory.GetMementos().ToArray();
+            var evolutionHistory = GivenCompleteEvolutionHistory(genome);
+            return evolutionHistory.GetMementos().ToArray();
         }
 
-        private MigrationHistory GivenCompleteMigrationHistory(IGenome migrations)
+        private EvolutionHistory GivenCompleteEvolutionHistory(IGenome genome)
         {
             var databaseSpecification = new DatabaseSpecification("Mathematicians");
-            migrations.AddGenes(databaseSpecification);
-            return databaseSpecification.MigrationHistory;
+            genome.AddGenes(databaseSpecification);
+            return databaseSpecification.EvolutionHistory;
         }
 
-        private MigrationHistory WhenLoadMigrationHistory(MigrationMemento[] mementos)
+        private EvolutionHistory WhenLoadEvolutionHistory(GeneMemento[] mementos)
         {
-            return MigrationHistory.LoadMementos(mementos);
+            return EvolutionHistory.LoadMementos(mementos);
         }
 
-        private static string[] WhenGenerateSql(IGenome migrations, MigrationHistory migrationHistory)
+        private static string[] WhenGenerateSql(IGenome genome, EvolutionHistory evolutionHistory)
         {
-            var sqlGenerator = new SqlGenerator(migrations, migrationHistory);
+            var sqlGenerator = new SqlGenerator(genome, evolutionHistory);
             return sqlGenerator.Generate("Mathematicians");
         }
 
-        private static string[] WhenGenerateRollbackSql(IGenome migrations, MigrationHistory migrationHistory)
+        private static string[] WhenGenerateRollbackSql(IGenome genome, EvolutionHistory evolutionHistory)
         {
-            var sqlGenerator = new SqlGenerator(migrations, migrationHistory);
+            var sqlGenerator = new SqlGenerator(genome, evolutionHistory);
             return sqlGenerator.GenerateRollbackSql("Mathematicians");
         }
     }

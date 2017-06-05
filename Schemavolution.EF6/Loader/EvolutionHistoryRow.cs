@@ -2,7 +2,7 @@
 
 namespace Schemavolution.EF6.Loader
 {
-    class MigrationHistoryRow
+    class EvolutionHistoryRow
     {
         public string Attributes { get; set; }
         public BigInteger HashCode { get; set; }

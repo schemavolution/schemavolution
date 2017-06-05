@@ -1,5 +1,5 @@
 ﻿using Schemavolution.Specification.Implementation;
-using Schemavolution.Specification.Migrations;
+using Schemavolution.Specification.Genes;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -7,28 +7,28 @@ namespace Schemavolution.Specification
 {
     public class UniqueIndexSpecification : Specification
     {
-        private CreateUniqueIndexMigration _migration;
+        private CreateUniqueIndexGene _gene;
 
-        internal CreateUniqueIndexMigration Migration => _migration;
-        internal override IEnumerable<Migration> Migrations => new[] { _migration };
+        internal CreateUniqueIndexGene Gene => _gene;
+        internal override IEnumerable<Gene> Genes => new[] { _gene };
 
-        internal UniqueIndexSpecification(CreateUniqueIndexMigration migration, MigrationHistoryBuilder migrationHistoryBuilder) :
-            base(migrationHistoryBuilder)
+        internal UniqueIndexSpecification(CreateUniqueIndexGene gene, EvolutionHistoryBuilder geneHistoryBuilder) :
+            base(geneHistoryBuilder)
         {
-            _migration = migration;
+            _gene = gene;
         }
 
         public ForeignKeySpecification CreateForeignKey(PrimaryKeySpecification referencing, bool cascadeDelete = false, bool cascadeUpdate = false)
         {
-            var childMigration = new CreateForeignKeyMigration(
-                _migration,
-                referencing.Migration,
+            var childGene = new CreateForeignKeyGene(
+                _gene,
+                referencing.Gene,
                 cascadeDelete,
                 cascadeUpdate,
                 Prerequisites);
-            MigrationHistoryBuilder.Append(childMigration);
-            childMigration.AddToParent();
-            return new ForeignKeySpecification(MigrationHistoryBuilder);
+            EvolutionHistoryBuilder.Append(childGene);
+            childGene.AddToParent();
+            return new ForeignKeySpecification(EvolutionHistoryBuilder);
         }
     }
 }

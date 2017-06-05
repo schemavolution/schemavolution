@@ -11,38 +11,38 @@ namespace Schemavolution.EF6.Generator
         private readonly string _databaseName;
 
         private ImmutableList<string> _sql = ImmutableList<string>.Empty;
-        private MigrationDelta _ahead;
+        private EvolutionDelta _ahead;
 
-        public RollbackGenerator(string databaseName, MigrationDelta ahead)
+        public RollbackGenerator(string databaseName, EvolutionDelta ahead)
         {
             _databaseName = databaseName;
             _ahead = ahead;
         }
 
         public bool Any => _ahead.Any;
-        public Migration Head => _ahead.Head;
+        public Gene Head => _ahead.Head;
         public ImmutableList<string> Sql => _sql;
 
-        public void AddMigration(Migration migration)
+        public void AddGene(Gene gene)
         {
-            var migrationsAffected = new MigrationHistoryBuilder();
-            migrationsAffected.Append(migration);
-            string[] rollbackSql = migration.GenerateRollbackSql(migrationsAffected, this);
-            var mementos = migrationsAffected.MigrationHistory.GetMementos().ToList();
+            var genesAffected = new EvolutionHistoryBuilder();
+            genesAffected.Append(gene);
+            string[] rollbackSql = gene.GenerateRollbackSql(genesAffected, this);
+            var mementos = genesAffected.EvolutionHistory.GetMementos().ToList();
             string[] deleteStatements = GenerateDeleteStatements(_databaseName, mementos);
             _sql = _sql.InsertRange(0, deleteStatements);
             _sql = _sql.InsertRange(0, rollbackSql);
-            _ahead = _ahead.Subtract(migrationsAffected.MigrationHistory);
+            _ahead = _ahead.Subtract(genesAffected.EvolutionHistory);
         }
 
-        public ImmutableList<Migration> PullPrerequisitesForward(Migration migration, Migration origin, Func<Migration, bool> canOptimize)
+        public ImmutableList<Gene> PullPrerequisitesForward(Gene gene, Gene origin, Func<Gene, bool> canOptimize)
         {
             throw new NotImplementedException();
         }
 
-        private string[] GenerateDeleteStatements(string databaseName, IEnumerable<MigrationMemento> migrations)
+        private string[] GenerateDeleteStatements(string databaseName, IEnumerable<GeneMemento> genes)
         {
-            var hashCodes = string.Join(", ", migrations.Select(m => $"0x{m.HashCode.ToString("X")}"));
+            var hashCodes = string.Join(", ", genes.Select(m => $"0x{m.HashCode.ToString("X")}"));
             string[] sql =
             {
                 $@"DELETE p

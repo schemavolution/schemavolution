@@ -1,5 +1,5 @@
 ﻿using Schemavolution.Specification.Implementation;
-using Schemavolution.Specification.Migrations;
+using Schemavolution.Specification.Genes;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -7,28 +7,28 @@ namespace Schemavolution.Specification
 {
     public class PrimaryKeySpecification : Specification
     {
-        private readonly CreatePrimaryKeyMigration _migration;
+        private readonly CreatePrimaryKeyGene _gene;
 
-        internal CreatePrimaryKeyMigration Migration => _migration;
-        internal override IEnumerable<Migration> Migrations => new[] { _migration };
+        internal CreatePrimaryKeyGene Gene => _gene;
+        internal override IEnumerable<Gene> Genes => new[] { _gene };
 
-        internal PrimaryKeySpecification(CreatePrimaryKeyMigration migration, MigrationHistoryBuilder migrationHistoryBuilder) :
-            base(migrationHistoryBuilder)
+        internal PrimaryKeySpecification(CreatePrimaryKeyGene gene, EvolutionHistoryBuilder evolutionHistoryBuilder) :
+            base(evolutionHistoryBuilder)
         {
-            _migration = migration;
+            _gene = gene;
         }
 
         public ForeignKeySpecification CreateForeignKey(PrimaryKeySpecification referencing, bool cascadeDelete = false, bool cascadeUpdate = false)
         {
-            var childMigration = new CreateForeignKeyMigration(
-                _migration,
-                referencing._migration,
+            var childMigration = new CreateForeignKeyGene(
+                _gene,
+                referencing._gene,
                 cascadeDelete,
                 cascadeUpdate,
                 Prerequisites);
-            MigrationHistoryBuilder.Append(childMigration);
+            EvolutionHistoryBuilder.Append(childMigration);
             childMigration.AddToParent();
-            return new ForeignKeySpecification(MigrationHistoryBuilder);
+            return new ForeignKeySpecification(EvolutionHistoryBuilder);
         }
     }
 }

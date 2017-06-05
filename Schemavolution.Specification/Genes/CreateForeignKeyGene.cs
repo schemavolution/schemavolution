@@ -5,22 +5,22 @@ using System.Linq;
 using System.Numerics;
 using Schemavolution.Specification.Implementation;
 
-namespace Schemavolution.Specification.Migrations
+namespace Schemavolution.Specification.Genes
 {
-    class CreateForeignKeyMigration : TableDefinitionMigration
+    class CreateForeignKeyGene : TableDefinitionGene
     {
-        private readonly IndexMigration _parent;
-        private readonly CreatePrimaryKeyMigration _referencing;
+        private readonly IndexGene _parent;
+        private readonly CreatePrimaryKeyGene _referencing;
         private readonly bool _cascadeDelete;
         private readonly bool _cascadeUpdate;
 
         public string DatabaseName => _parent.DatabaseName;
         public string SchemaName => _parent.SchemaName;
         public string TableName => _parent.TableName;
-        public IEnumerable<CreateColumnMigration> Columns => _parent.Columns;
-        internal override CreateTableMigration CreateTableMigration => _parent.CreateTableMigration;
+        public IEnumerable<CreateColumnGene> Columns => _parent.Columns;
+        internal override CreateTableGene CreateTableGene => _parent.CreateTableGene;
 
-        public CreateForeignKeyMigration(IndexMigration parent, CreatePrimaryKeyMigration referencing, bool cascadeDelete, bool cascadeUpdate, ImmutableList<Migration> prerequsites) :
+        public CreateForeignKeyGene(IndexGene parent, CreatePrimaryKeyGene referencing, bool cascadeDelete, bool cascadeUpdate, ImmutableList<Gene> prerequsites) :
             base(prerequsites)
         {
             _parent = parent;
@@ -29,10 +29,10 @@ namespace Schemavolution.Specification.Migrations
             _cascadeUpdate = cascadeUpdate;
         }
 
-        public override IEnumerable<Migration> AllPrerequisites => Prerequisites
-            .Concat(new[] { CreateTableMigration });
+        public override IEnumerable<Gene> AllPrerequisites => Prerequisites
+            .Concat(new[] { CreateTableGene });
 
-        public override string[] GenerateSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph)
+        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
             string indexTail = string.Join("_", Columns.Select(c => $"{c.ColumnName}").ToArray());
             string columnList = string.Join(", ", Columns.Select(c => $"[{c.ColumnName}]").ToArray());
@@ -50,7 +50,7 @@ namespace Schemavolution.Specification.Migrations
             return sql;
         }
 
-        public override string[] GenerateRollbackSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph)
+        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
             string indexTail = string.Join("_", Columns.Select(c => $"{c.ColumnName}").ToArray());
 
@@ -77,16 +77,16 @@ namespace Schemavolution.Specification.Migrations
 
         protected override BigInteger ComputeSha256Hash()
         {
-            return nameof(CreateForeignKeyMigration).Sha256Hash().Concatenate(
+            return nameof(CreateForeignKeyGene).Sha256Hash().Concatenate(
                 _parent.Sha256Hash,
                 _referencing.Sha256Hash,
                 new BigInteger((_cascadeDelete ? 2 : 0) + (_cascadeUpdate ? 1 : 0)));
         }
 
-        internal override MigrationMemento GetMemento()
+        internal override GeneMemento GetMemento()
         {
-            return new MigrationMemento(
-                nameof(CreateForeignKeyMigration),
+            return new GeneMemento(
+                nameof(CreateForeignKeyGene),
                 new Dictionary<string, string>
                 {
                     ["CascadeDelete"] = _cascadeDelete ? "true" : "false",
@@ -101,14 +101,14 @@ namespace Schemavolution.Specification.Migrations
                 });
         }
 
-        public static CreateForeignKeyMigration FromMemento(MigrationMemento memento, IImmutableDictionary<BigInteger, Migration> migrationsByHashCode)
+        public static CreateForeignKeyGene FromMemento(GeneMemento memento, IImmutableDictionary<BigInteger, Gene> genesByHashCode)
         {
-            return new CreateForeignKeyMigration(
-                (CreateIndexMigration)migrationsByHashCode[memento.Prerequisites["Parent"].Single()],
-                (CreatePrimaryKeyMigration)migrationsByHashCode[memento.Prerequisites["Referencing"].Single()],
+            return new CreateForeignKeyGene(
+                (CreateIndexGene)genesByHashCode[memento.Prerequisites["Parent"].Single()],
+                (CreatePrimaryKeyGene)genesByHashCode[memento.Prerequisites["Referencing"].Single()],
                 memento.Attributes["CascadeDelete"] == "true",
                 memento.Attributes["CascaseUpdate"] == "true",
-                memento.Prerequisites["Prerequisites"].Select(x => migrationsByHashCode[x]).ToImmutableList());
+                memento.Prerequisites["Prerequisites"].Select(x => genesByHashCode[x]).ToImmutableList());
         }
     }
 }

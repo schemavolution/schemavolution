@@ -5,6 +5,6 @@ namespace Schemavolution.Specification.Implementation
 {
     public interface IGraphVisitor
     {
-        ImmutableList<Migration> PullPrerequisitesForward(Migration migration, Migration origin, Func<Migration, bool> canOptimize);
+        ImmutableList<Gene> PullPrerequisitesForward(Gene gene, Gene origin, Func<Gene, bool> canOptimize);
     }
 }

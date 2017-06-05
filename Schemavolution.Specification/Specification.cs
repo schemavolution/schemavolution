@@ -6,22 +6,22 @@ namespace Schemavolution.Specification
 {
     public abstract class Specification
     {
-        private readonly MigrationHistoryBuilder _migrationHistoryBuilder;
-        private readonly ImmutableList<Migration> _prerequisites;
+        private readonly EvolutionHistoryBuilder _evolutionHistoryBuilder;
+        private readonly ImmutableList<Gene> _prerequisites;
 
-        protected MigrationHistoryBuilder MigrationHistoryBuilder => _migrationHistoryBuilder;
-        protected ImmutableList<Migration> Prerequisites => _prerequisites;
-        internal abstract IEnumerable<Migration> Migrations { get; }
+        protected EvolutionHistoryBuilder EvolutionHistoryBuilder => _evolutionHistoryBuilder;
+        protected ImmutableList<Gene> Prerequisites => _prerequisites;
+        internal abstract IEnumerable<Gene> Genes { get; }
 
-        protected Specification(MigrationHistoryBuilder migrationHistoryBuilder)
+        protected Specification(EvolutionHistoryBuilder evolutionHistoryBuilder)
         {
-            _migrationHistoryBuilder = migrationHistoryBuilder;
-            _prerequisites = ImmutableList<Migration>.Empty;
+            _evolutionHistoryBuilder = evolutionHistoryBuilder;
+            _prerequisites = ImmutableList<Gene>.Empty;
         }
 
-        protected Specification(MigrationHistoryBuilder migrationHistoryBuilder, ImmutableList<Migration> prerequisites)
+        protected Specification(EvolutionHistoryBuilder evolutionHistoryBuilder, ImmutableList<Gene> prerequisites)
         {
-            _migrationHistoryBuilder = migrationHistoryBuilder;
+            _evolutionHistoryBuilder = evolutionHistoryBuilder;
             _prerequisites = prerequisites;
         }
     }

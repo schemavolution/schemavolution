@@ -5,8 +5,8 @@ using Schemavolution.Specification;
 namespace Mathematicians
 {
     // Again, something that you wouldn't actually do, but this supports
-    // the tests about rolling back a migration.
-    public class MigrationsV3 : IGenome
+    // the tests about rolling back an evolution.
+    public class GenomeV3 : IGenome
     {
         public void AddGenes(DatabaseSpecification db)
         {

@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using Schemavolution.Specification.Implementation;
-using Schemavolution.Specification.Migrations;
+using Schemavolution.Specification.Genes;
 using System.Linq;
 
 namespace Schemavolution.Specification
 {
     public class ColumnSpecification : Specification
     {
-        private readonly CreateColumnMigration _migration;
+        private readonly CreateColumnGene _gene;
 
-        internal CreateColumnMigration Migration => _migration;
-        internal override IEnumerable<Migration> Migrations => new[] { _migration };
+        internal CreateColumnGene Gene => _gene;
+        internal override IEnumerable<Gene> Genes => new[] { _gene };
 
-        internal ColumnSpecification(CreateColumnMigration migration, MigrationHistoryBuilder migrationHistoryBuilder) :
-            base(migrationHistoryBuilder)
+        internal ColumnSpecification(CreateColumnGene gene, EvolutionHistoryBuilder evolutionHistoryBuilder) :
+            base(evolutionHistoryBuilder)
         {
-            _migration = migration;
+            _gene = gene;
         }
     }
 }

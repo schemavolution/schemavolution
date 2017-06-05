@@ -8,29 +8,29 @@ namespace Schemavolution.EF6
 {
     public class SqlGenerator
     {
-        private readonly IGenome _migrations;
-        private readonly MigrationHistory _migrationHistory;
+        private readonly IGenome _genome;
+        private readonly EvolutionHistory _evolutionHistory;
 
-        public SqlGenerator(IGenome migrations, MigrationHistory migrationHistory)
+        public SqlGenerator(IGenome genome, EvolutionHistory evolutionHistory)
         {
-            _migrations = migrations;
-            _migrationHistory = migrationHistory;
+            _genome = genome;
+            _evolutionHistory = evolutionHistory;
         }
 
         public string[] Generate(string databaseName)
         {
-            var newMigrations = GetMigrationHistory(databaseName);
-            var ahead = _migrationHistory.Subtract(newMigrations);
+            var newGenes = GetEvolutionHistory(databaseName);
+            var ahead = _evolutionHistory.Subtract(newGenes);
             if (ahead.Any)
                 throw new InvalidOperationException(
-                    "The target database is ahead of the desired migration. You can force a rollback, which may destroy data.");
-            var difference = newMigrations.Subtract(_migrationHistory);
+                    "The target database is ahead of the desired genome. You can force a rollback, which may destroy data.");
+            var difference = newGenes.Subtract(_evolutionHistory);
 
             var generator = new ForwardGenerator(databaseName, difference);
 
             while (generator.Any)
             {
-                generator.AddMigration(generator.Head);
+                generator.AddGene(generator.Head);
             }
 
             return generator.Sql.ToArray();
@@ -38,24 +38,24 @@ namespace Schemavolution.EF6
 
         public string[] GenerateRollbackSql(string databaseName)
         {
-            var newMigrations = GetMigrationHistory(databaseName);
-            var ahead = _migrationHistory.Subtract(newMigrations);
+            var newGenes = GetEvolutionHistory(databaseName);
+            var ahead = _evolutionHistory.Subtract(newGenes);
 
             var generator = new RollbackGenerator(databaseName, ahead);
 
             while (generator.Any)
             {
-                generator.AddMigration(generator.Head);
+                generator.AddGene(generator.Head);
             }
 
             return generator.Sql.ToArray();
         }
 
-        private MigrationHistory GetMigrationHistory(string databaseName)
+        private EvolutionHistory GetEvolutionHistory(string databaseName)
         {
             var databaseSpecification = new DatabaseSpecification(databaseName);
-            _migrations.AddGenes(databaseSpecification);
-            return databaseSpecification.MigrationHistory;
+            _genome.AddGenes(databaseSpecification);
+            return databaseSpecification.EvolutionHistory;
         }
     }
 }

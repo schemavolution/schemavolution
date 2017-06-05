@@ -1,19 +1,19 @@
 ﻿using Schemavolution.Specification.Implementation;
-using Schemavolution.Specification.Migrations;
+using Schemavolution.Specification.Genes;
 using System.Collections.Generic;
 
 namespace Schemavolution.Specification
 {
     public class CustomSqlSpecification : Specification
     {
-        private CustomSqlMigration _migration;
+        private CustomSqlGene _gene;
 
-        internal override IEnumerable<Migration> Migrations => new[] { _migration };
+        internal override IEnumerable<Gene> Genes => new[] { _gene };
 
-        internal CustomSqlSpecification(CustomSqlMigration migration, MigrationHistoryBuilder migrationHistoryBuilder) :
+        internal CustomSqlSpecification(CustomSqlGene gene, EvolutionHistoryBuilder migrationHistoryBuilder) :
             base(migrationHistoryBuilder)
         {
-            _migration = migration;
+            _gene = gene;
         }
     }
 }

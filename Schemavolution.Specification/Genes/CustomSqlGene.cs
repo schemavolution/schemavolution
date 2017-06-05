@@ -5,9 +5,9 @@ using System.Numerics;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Schemavolution.Specification.Migrations
+namespace Schemavolution.Specification.Genes
 {
-    class CustomSqlMigration : Migration
+    class CustomSqlGene : Gene
     {
         private readonly string _databaseName;
         private readonly string _up;
@@ -17,7 +17,7 @@ namespace Schemavolution.Specification.Migrations
         public string Up => _up;
         public string Down => _down;
 
-        public CustomSqlMigration(string databaseName, string up, string down, ImmutableList<Migration> prerequisites) :
+        public CustomSqlGene(string databaseName, string up, string down, ImmutableList<Gene> prerequisites) :
             base(prerequisites)
         {
             _databaseName = databaseName;
@@ -25,14 +25,14 @@ namespace Schemavolution.Specification.Migrations
             _down = down;
         }
 
-        public override IEnumerable<Migration> AllPrerequisites => Prerequisites;
+        public override IEnumerable<Gene> AllPrerequisites => Prerequisites;
 
-        public override string[] GenerateSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph)
+        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
             return new string[] { $"USE {DatabaseName}", _up };
         }
 
-        public override string[] GenerateRollbackSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph)
+        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
             return
                 _down != null ? new string[] { $"USE {DatabaseName}", _down } :
@@ -41,15 +41,15 @@ namespace Schemavolution.Specification.Migrations
 
         protected override BigInteger ComputeSha256Hash()
         {
-            return nameof(CustomSqlMigration).Sha256Hash().Concatenate(
+            return nameof(CustomSqlGene).Sha256Hash().Concatenate(
                 _up.Sha256Hash(),
                 _down.Sha256Hash());
         }
 
-        internal override MigrationMemento GetMemento()
+        internal override GeneMemento GetMemento()
         {
-            return new MigrationMemento(
-                nameof(CustomSqlMigration),
+            return new GeneMemento(
+                nameof(CustomSqlGene),
                 new Dictionary<string, string>
                 {
                     [nameof(DatabaseName)] = DatabaseName,
@@ -63,13 +63,13 @@ namespace Schemavolution.Specification.Migrations
                 });
         }
 
-        public static CustomSqlMigration FromMemento(MigrationMemento memento, IImmutableDictionary<BigInteger, Migration> migrationsByHashCode)
+        public static CustomSqlGene FromMemento(GeneMemento memento, IImmutableDictionary<BigInteger, Gene> genesByHashCode)
         {
-            return new CustomSqlMigration(
+            return new CustomSqlGene(
                 memento.Attributes["DatabaseName"],
                 memento.Attributes["Up"],
                 memento.Attributes["Down"],
-                memento.Prerequisites["Prerequisites"].Select(p => migrationsByHashCode[p]).ToImmutableList());
+                memento.Prerequisites["Prerequisites"].Select(p => genesByHashCode[p]).ToImmutableList());
         }
     }
 }

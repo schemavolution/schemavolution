@@ -5,8 +5,8 @@ using Schemavolution.Specification;
 namespace Mathematicians
 {
     // You wouldn't actually do this, but to test upgrading to a new version,
-    // I created a second migrations class.
-    public class MigrationsV2 : IGenome
+    // I created a second genome class.
+    public class GenomeV2 : IGenome
     {
         public void AddGenes(DatabaseSpecification db)
         {

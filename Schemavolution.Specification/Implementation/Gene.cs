@@ -5,23 +5,23 @@ using System.Numerics;
 
 namespace Schemavolution.Specification.Implementation
 {
-    public abstract class Migration
+    public abstract class Gene
     {
         private readonly Lazy<BigInteger> _sha256Hash;
-        private readonly ImmutableList<Migration> _prerequisites;
+        private readonly ImmutableList<Gene> _prerequisites;
 
-        protected ImmutableList<Migration> Prerequisites => _prerequisites;
+        protected ImmutableList<Gene> Prerequisites => _prerequisites;
 
-        protected Migration(ImmutableList<Migration> prerequisites)
+        protected Gene(ImmutableList<Gene> prerequisites)
         {
             _sha256Hash = new Lazy<BigInteger>(ComputeSha256Hash);
             _prerequisites = prerequisites;
         }
 
-        public abstract IEnumerable<Migration> AllPrerequisites { get; }
-        public abstract string[] GenerateSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph);
-        public abstract string[] GenerateRollbackSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph);
-        internal abstract MigrationMemento GetMemento();
+        public abstract IEnumerable<Gene> AllPrerequisites { get; }
+        public abstract string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph);
+        public abstract string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph);
+        internal abstract GeneMemento GetMemento();
         protected abstract BigInteger ComputeSha256Hash();
 
         internal virtual void AddToParent()
@@ -33,11 +33,11 @@ namespace Schemavolution.Specification.Implementation
         public override bool Equals(object obj)
         {
             if (obj.GetType() == this.GetType())
-                return Equals((Migration)obj);
+                return Equals((Gene)obj);
             return base.Equals(obj);
         }
 
-        public bool Equals(Migration other)
+        public bool Equals(Gene other)
         {
             if (ReferenceEquals(null, other))
                 return false;

@@ -51,9 +51,9 @@
     <Compile Include="Generator\ForwardGenerator.cs" />
     <Compile Include="Generator\RollbackGenerator.cs" />
     <Compile Include="Loader\LookaheadEnumerator.cs" />
-    <Compile Include="Loader\MigrationHistoryRow.cs" />
+    <Compile Include="Loader\EvolutionHistoryRow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DatabaseMigrator.cs" />
+    <Compile Include="DatabaseEvolver.cs" />
     <Compile Include="SqlGenerator.cs" />
   </ItemGroup>
   <ItemGroup>

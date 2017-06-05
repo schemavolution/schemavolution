@@ -5,11 +5,11 @@ using System.Numerics;
 using System.Linq;
 using System.Collections.Immutable;
 
-namespace Schemavolution.Specification.Migrations
+namespace Schemavolution.Specification.Genes
 {
-    class CreateColumnMigration : TableDefinitionMigration
+    class CreateColumnGene : TableDefinitionGene
     {
-        private readonly CreateTableMigration _parent;
+        private readonly CreateTableGene _parent;
         private readonly string _columnName;
         private readonly string _typeDescriptor;
         private readonly bool _nullable;
@@ -20,9 +20,9 @@ namespace Schemavolution.Specification.Migrations
         public string ColumnName => _columnName;
         public string TypeDescriptor => _typeDescriptor;
         public bool Nullable => _nullable;
-        internal override CreateTableMigration CreateTableMigration => _parent;
+        internal override CreateTableGene CreateTableGene => _parent;
 
-        public CreateColumnMigration(CreateTableMigration parent, string columnName, string typeDescriptor, bool nullable, ImmutableList<Migration> prerequsites) :
+        public CreateColumnGene(CreateTableGene parent, string columnName, string typeDescriptor, bool nullable, ImmutableList<Gene> prerequsites) :
             base(prerequsites)
         {
             _parent = parent;
@@ -31,10 +31,10 @@ namespace Schemavolution.Specification.Migrations
             _nullable = nullable;
         }
 
-        public override IEnumerable<Migration> AllPrerequisites => Prerequisites
-            .Concat(new[] { CreateTableMigration });
+        public override IEnumerable<Gene> AllPrerequisites => Prerequisites
+            .Concat(new[] { CreateTableGene });
 
-        public override string[] GenerateSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph)
+        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
             string[] identityTypes = { "INT IDENTITY" };
             string[] numericTypes = { "BIGINT", "INT", "SMALLINT", "TINYINT", "MONEY", "SMALLMONEY", "DECIMAL", "FLOAT", "REAL" };
@@ -79,7 +79,7 @@ namespace Schemavolution.Specification.Migrations
             }
         }
 
-        public override string[] GenerateRollbackSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph)
+        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
             string[] sql =
             {
@@ -99,17 +99,17 @@ namespace Schemavolution.Specification.Migrations
 
         protected override BigInteger ComputeSha256Hash()
         {
-            return nameof(CreateColumnMigration).Sha256Hash().Concatenate(
+            return nameof(CreateColumnGene).Sha256Hash().Concatenate(
                 _parent.Sha256Hash,
                 _columnName.Sha256Hash(),
                 _typeDescriptor.Sha256Hash(),
                 _nullable ? "true".Sha256Hash() : "false".Sha256Hash());
         }
 
-        internal override MigrationMemento GetMemento()
+        internal override GeneMemento GetMemento()
         {
-            return new MigrationMemento(
-                nameof(CreateColumnMigration),
+            return new GeneMemento(
+                nameof(CreateColumnGene),
                 new Dictionary<string, string>
                 {
                     [nameof(ColumnName)] = ColumnName,
@@ -124,14 +124,14 @@ namespace Schemavolution.Specification.Migrations
                 });
         }
 
-        public static CreateColumnMigration FromMemento(MigrationMemento memento, IImmutableDictionary<BigInteger, Migration> migrationsByHashCode)
+        public static CreateColumnGene FromMemento(GeneMemento memento, IImmutableDictionary<BigInteger, Gene> genesByHashCode)
         {
-            return new CreateColumnMigration(
-                (CreateTableMigration)migrationsByHashCode[memento.Prerequisites["Parent"].Single()],
+            return new CreateColumnGene(
+                (CreateTableGene)genesByHashCode[memento.Prerequisites["Parent"].Single()],
                 memento.Attributes["ColumnName"],
                 memento.Attributes["TypeDescriptor"],
                 memento.Attributes["Nullable"] == "true",
-                memento.Prerequisites["Prerequisites"].Select(x => migrationsByHashCode[x]).ToImmutableList());
+                memento.Prerequisites["Prerequisites"].Select(x => genesByHashCode[x]).ToImmutableList());
         }
     }
 }

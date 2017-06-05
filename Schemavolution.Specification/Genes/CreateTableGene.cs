@@ -5,46 +5,46 @@ using System.Linq;
 using System.Numerics;
 using Schemavolution.Specification.Implementation;
 
-namespace Schemavolution.Specification.Migrations
+namespace Schemavolution.Specification.Genes
 {
-    class CreateTableMigration : Migration
+    class CreateTableGene : Gene
     {
-        private readonly UseSchemaMigration _parent;
+        private readonly UseSchemaGene _parent;
         private readonly string _tableName;
 
-        private ImmutableList<TableDefinitionMigration> _definitions =
-            ImmutableList<TableDefinitionMigration>.Empty;
+        private ImmutableList<TableDefinitionGene> _definitions =
+            ImmutableList<TableDefinitionGene>.Empty;
 
         public string DatabaseName => _parent.DatabaseName;
         public string SchemaName => _parent.SchemaName;
         public string TableName => _tableName;
 
-        public CreateTableMigration(UseSchemaMigration parent, string tableName, ImmutableList<Migration> prerequisites) :
+        public CreateTableGene(UseSchemaGene parent, string tableName, ImmutableList<Gene> prerequisites) :
             base(prerequisites)
         {
             _parent = parent;
             _tableName = tableName;
         }
 
-        public override IEnumerable<Migration> AllPrerequisites => Prerequisites
+        public override IEnumerable<Gene> AllPrerequisites => Prerequisites
             .Concat(new[] { _parent });
 
-        internal void AddDefinition(TableDefinitionMigration childMigration)
+        internal void AddDefinition(TableDefinitionGene childGene)
         {
-            _definitions = _definitions.Add(childMigration);
+            _definitions = _definitions.Add(childGene);
         }
 
-        public override string[] GenerateSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph)
+        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
             string createTable;
             string head = $"CREATE TABLE [{DatabaseName}].[{SchemaName}].[{TableName}]";
-            var optimizableMigrations = _definitions
+            var optimizableGenes = _definitions
                 .SelectMany(m => graph.PullPrerequisitesForward(m, this, CanOptimize))
                 .ToImmutableList();
-            if (optimizableMigrations.Any())
+            if (optimizableGenes.Any())
             {
-                var definitions = optimizableMigrations
-                    .OfType<TableDefinitionMigration>()
+                var definitions = optimizableGenes
+                    .OfType<TableDefinitionGene>()
                     .Select(d => d.GenerateDefinitionSql());
                 createTable = $"{head}({string.Join(",", definitions)})";
             }
@@ -57,18 +57,18 @@ namespace Schemavolution.Specification.Migrations
             {
                 createTable
             };
-            migrationsAffected.AppendAll(optimizableMigrations);
+            genesAffected.AppendAll(optimizableGenes);
 
             return sql;
         }
 
-        private bool CanOptimize(Migration migration)
+        private bool CanOptimize(Gene gene)
         {
-            if (migration is TableDefinitionMigration definition)
+            if (gene is TableDefinitionGene definition)
             {
-                return definition.CreateTableMigration == this;
+                return definition.CreateTableGene == this;
             }
-            else if (migration is CustomSqlMigration)
+            else if (gene is CustomSqlGene)
             {
                 return true;
             }
@@ -78,28 +78,28 @@ namespace Schemavolution.Specification.Migrations
             }
         }
 
-        public override string[] GenerateRollbackSql(MigrationHistoryBuilder migrationsAffected, IGraphVisitor graph)
+        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
             string[] sql =
             {
                 $"DROP TABLE [{DatabaseName}].[{SchemaName}].[{TableName}]"
             };
-            migrationsAffected.AppendAll(_definitions);
+            genesAffected.AppendAll(_definitions);
 
             return sql;
         }
 
         protected override BigInteger ComputeSha256Hash()
         {
-            return nameof(CreateTableMigration).Sha256Hash().Concatenate(
+            return nameof(CreateTableGene).Sha256Hash().Concatenate(
                 _parent.Sha256Hash,
                 _tableName.Sha256Hash());
         }
 
-        internal override MigrationMemento GetMemento()
+        internal override GeneMemento GetMemento()
         {
-            return new MigrationMemento(
-                nameof(CreateTableMigration),
+            return new GeneMemento(
+                nameof(CreateTableGene),
                 new Dictionary<string, string>
                 {
                     [nameof(TableName)] = TableName
@@ -112,12 +112,12 @@ namespace Schemavolution.Specification.Migrations
                 });
         }
 
-        public static CreateTableMigration FromMemento(MigrationMemento memento, IImmutableDictionary<BigInteger, Migration> migrationsByHashCode)
+        public static CreateTableGene FromMemento(GeneMemento memento, IImmutableDictionary<BigInteger, Gene> genesByHashCode)
         {
-            return new CreateTableMigration(
-                (UseSchemaMigration)migrationsByHashCode[memento.Prerequisites["Parent"].Single()],
+            return new CreateTableGene(
+                (UseSchemaGene)genesByHashCode[memento.Prerequisites["Parent"].Single()],
                 memento.Attributes["TableName"],
-                memento.Prerequisites["Prerequisites"].Select(p => migrationsByHashCode[p]).ToImmutableList());
+                memento.Prerequisites["Prerequisites"].Select(p => genesByHashCode[p]).ToImmutableList());
         }
     }
 }

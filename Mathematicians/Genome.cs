@@ -21,8 +21,8 @@ namespace Mathematicians
             var mathematicianId = table.CreateIdentityColumn("MathematicianId");
             var pk = table.CreatePrimaryKey(mathematicianId);
             var name = table.CreateStringColumn("Name", 100);
-            //var birthYear = table.CreateIntColumn("BirthYear");
-            //var deathYear = table.CreateIntColumn("DeathYear", nullable: true);
+            var birthYear = table.CreateIntColumn("BirthYear");
+            var deathYear = table.CreateIntColumn("DeathYear", nullable: true);
 
             return new AggregateRoot(pk);
         }

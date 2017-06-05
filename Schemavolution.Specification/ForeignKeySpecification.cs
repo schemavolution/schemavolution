@@ -6,10 +6,10 @@ namespace Schemavolution.Specification
 {
     public class ForeignKeySpecification : Specification
     {
-        internal override IEnumerable<Migration> Migrations => Enumerable.Empty<Migration>();
+        internal override IEnumerable<Gene> Genes => Enumerable.Empty<Gene>();
 
-        internal ForeignKeySpecification(MigrationHistoryBuilder migrationHistoryBuilder) :
-            base(migrationHistoryBuilder)
+        internal ForeignKeySpecification(EvolutionHistoryBuilder geneHistoryBuilder) :
+            base(geneHistoryBuilder)
         {
         }
     }

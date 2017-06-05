@@ -1,5 +1,5 @@
 ﻿using Schemavolution.Specification.Implementation;
-using Schemavolution.Specification.Migrations;
+using Schemavolution.Specification.Genes;
 using System.Linq;
 using System;
 using System.Collections.Generic;
@@ -9,26 +9,26 @@ namespace Schemavolution.Specification
 {
     public class TableSpecification : Specification
     {
-        private readonly CreateTableMigration _migration;
+        private readonly CreateTableGene _gene;
 
-        internal override IEnumerable<Migration> Migrations => new[] { _migration };
+        internal override IEnumerable<Gene> Genes => new[] { _gene };
 
-        internal TableSpecification(CreateTableMigration migration, MigrationHistoryBuilder migrationHistoryBuilder) :
-            base(migrationHistoryBuilder)
+        internal TableSpecification(CreateTableGene gene, EvolutionHistoryBuilder evolutionHistoryBuilder) :
+            base(evolutionHistoryBuilder)
         {
-            _migration = migration;
+            _gene = gene;
         }
 
-        private TableSpecification(CreateTableMigration migration, MigrationHistoryBuilder migrationHistoryBuilder, ImmutableList<Migration> prerequisites) :
-            base(migrationHistoryBuilder, prerequisites)
+        private TableSpecification(CreateTableGene gene, EvolutionHistoryBuilder evolutionHistoryBuilder, ImmutableList<Gene> prerequisites) :
+            base(evolutionHistoryBuilder, prerequisites)
         {
-            _migration = migration;
+            _gene = gene;
         }
 
         public TableSpecification After(params Specification[] specifications)
         {
-            return new TableSpecification(_migration, MigrationHistoryBuilder,
-                Prerequisites.AddRange(specifications.SelectMany(x => x.Migrations)));
+            return new TableSpecification(_gene, EvolutionHistoryBuilder,
+                Prerequisites.AddRange(specifications.SelectMany(x => x.Genes)));
         }
 
         public ColumnSpecification CreateIdentityColumn(string columnName)
@@ -163,48 +163,48 @@ namespace Schemavolution.Specification
 
         private ColumnSpecification CreateColumn(string columnName, string typeDescriptor, bool nullable)
         {
-            var childMigration = new CreateColumnMigration(
-                _migration,
+            var childGene = new CreateColumnGene(
+                _gene,
                 columnName,
                 typeDescriptor,
                 nullable,
                 Prerequisites);
-            MigrationHistoryBuilder.Append(childMigration);
-            childMigration.AddToParent();
-            return new ColumnSpecification(childMigration, MigrationHistoryBuilder);
+            EvolutionHistoryBuilder.Append(childGene);
+            childGene.AddToParent();
+            return new ColumnSpecification(childGene, EvolutionHistoryBuilder);
         }
 
         public PrimaryKeySpecification CreatePrimaryKey(params ColumnSpecification[] columns)
         {
-            var childMigration = new CreatePrimaryKeyMigration(
-                _migration,
-                columns.Select(c => c.Migration),
+            var childGene = new CreatePrimaryKeyGene(
+                _gene,
+                columns.Select(c => c.Gene),
                 Prerequisites);
-            MigrationHistoryBuilder.Append(childMigration);
-            childMigration.AddToParent();
-            return new PrimaryKeySpecification(childMigration, MigrationHistoryBuilder);
+            EvolutionHistoryBuilder.Append(childGene);
+            childGene.AddToParent();
+            return new PrimaryKeySpecification(childGene, EvolutionHistoryBuilder);
         }
 
         public UniqueIndexSpecification CreateUniqueIndex(params ColumnSpecification[] columns)
         {
-            var childMigration = new CreateUniqueIndexMigration(
-                _migration,
-                columns.Select(c => c.Migration),
+            var childGene = new CreateUniqueIndexGene(
+                _gene,
+                columns.Select(c => c.Gene),
                 Prerequisites);
-            MigrationHistoryBuilder.Append(childMigration);
-            childMigration.AddToParent();
-            return new UniqueIndexSpecification(childMigration, MigrationHistoryBuilder);
+            EvolutionHistoryBuilder.Append(childGene);
+            childGene.AddToParent();
+            return new UniqueIndexSpecification(childGene, EvolutionHistoryBuilder);
         }
 
         public IndexSpecification CreateIndex(params ColumnSpecification[] columns)
         {
-            var childMigration = new CreateIndexMigration(
-                _migration,
-                columns.Select(c => c.Migration),
+            var childGene = new CreateIndexGene(
+                _gene,
+                columns.Select(c => c.Gene),
                 Prerequisites);
-            MigrationHistoryBuilder.Append(childMigration);
-            childMigration.AddToParent();
-            return new IndexSpecification(childMigration, MigrationHistoryBuilder);
+            EvolutionHistoryBuilder.Append(childGene);
+            childGene.AddToParent();
+            return new IndexSpecification(childGene, EvolutionHistoryBuilder);
         }
     }
 }
