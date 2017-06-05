@@ -1,40 +1,94 @@
-﻿# Mergable Migrations
+﻿# Schemavolution
 
-Partially ordered database migrations for .NET.
+Database migrations without merge conflicts.
 
 Current status: **Proof of Concept**
 
 You can't yet use this in production.
 
-## What do migrations look like?
+Please see [schemavolution.com](http://schemavolution.com).
 
-Create a schema (or use `dbo`):
+## Your database's genome
+
+Create a class that implements `IGenome`. This class has one method, `AddGenes`. Create a schema (or use `dbo`):
 
 ```csharp
-public void AddMigrations(DatabaseSpecification db)
+public void AddGenes(DatabaseSpecification db)
 {
     var dbo = db.UseSchema("dbo");
 
-    var mathematicianKey = DefineMathematician(dbo);
+    var mathematician = DefineMathematician(dbo);
 
-    DefineContribution(dbo, mathematicianKey);
+    DefineContribution(dbo, mathematician);
 }
 ```
 
-Create a table:
+The database schema is composed of tiny steps -- genes -- that each make small changes to its structure. One kind of gene creates a table:
 
 ```csharp
 private static PrimaryKeySpecification DefineMathematician(SchemaSpecification schema)
 {
     var table = schema.CreateTable("Mathematician");
 
-    var mathematicianId = table.CreateIntColumn("MathematicianId");
-    var pk = table.CreatePrimaryKey(mathematicianId);
+    // ...
+}
+```
+
+Another one creates a column:
+
+```csharp
+private static PrimaryKeySpecification DefineMathematician(SchemaSpecification schema)
+{
+    // ...
+
+    var mathematicianId = table.CreateIdentityColumn("MathematicianId");
     var name = table.CreateStringColumn("Name", 100);
     var birthYear = table.CreateIntColumn("BirthYear");
     var deathYear = table.CreateIntColumn("DeathYear", nullable: true);
 
+    // ...
+}
+```
+
+Another one creates a primary key:
+
+```csharp
+private static PrimaryKeySpecification DefineMathematician(SchemaSpecification schema)
+{
+    // ...
+
+    var pk = table.CreatePrimaryKey(mathematicianId);
+
     return pk;
+}
+```
+
+You can group genes together into chromosomes -- methods that define entire tables:
+
+```csharp
+private static void DefineContribution(SchemaSpecification schema, PrimaryKeySpecification mathematicianKey)
+{
+    var table = schema.CreateTable("Contribution");
+
+    var contributionId = table.CreateIdentityColumn("ContributionId");
+    var mathematicianId = table.CreateIntColumn("MathematicianId");
+
+    // ...
+
+    var pk = table.CreatePrimaryKey(contributionId);
+}
+```
+
+Create an index:
+
+```csharp
+private static void DefineContribution(SchemaSpecification schema, PrimaryKeySpecification mathematicianKey)
+{
+    // ...
+
+    var indexMathematicianId = table.CreateIndex(mathematicianId);
+
+    // ...
 }
 ```
 
@@ -43,18 +97,17 @@ Create a foreign key:
 ```csharp
 private static void DefineContribution(SchemaSpecification schema, PrimaryKeySpecification mathematicianKey)
 {
-    var table = schema.CreateTable("Contribution");
+    // ...
 
-    var mathematicianId = table.CreateIntColumn("MathematicianId");
-
-    var indexMathematicianId = table.CreateIndex(mathematicianId);
     var fkMathematician = indexMathematicianId.CreateForeignKey(mathematicianKey);
+
+    // ...
 }
 ```
 
-Organize these migration steps to keep them nice and neat. Put them in functions. Group them in classes. The organization is up to you. They don't need to be put in sequential order.
+Organize these genes into chromosomes to keep them nice and neat. Put them in functions. Group them in classes. The organization is up to you. They don't need to be put in sequential order.
 
-If you make a mistake, do not delete a migration step! Instead, create a new migration. Rename a table or column:
+If you make a mistake, do not delete a gene! Instead, create a new gene that mutates the schema. Rename a table or column:
 
 ```csharp
 private static void DefineContribution(SchemaSpecification schema, PrimaryKeySpecification mathematicianKey)
@@ -87,7 +140,7 @@ private static PrimaryKeySpecification DefineMathematician(SchemaSpecification s
 }
 ```
 
-As long as you always add migrations, database deployment will be successful. To any environment. In any order. But if you delete one, then the tool will halt.
+As long as you always add genes, database deployment will be successful. To any environment. In any order. But if you delete one, then you will have to force the tool to roll back the gene, which could result in data loss.
 
 ## Why partially ordered?
 
