@@ -26,6 +26,14 @@ namespace Schemavolution.EF6
             _genome = genome;
         }
 
+        public DatabaseEvolver(string databaseName, string masterConnectionString, IGenome genome)
+        {
+            _databaseName = databaseName;
+            _fileName = null;
+            _masterConnectionString = masterConnectionString;
+            _genome = genome;
+        }
+
         public void EvolveDatabase()
         {
             var evolutionHistory = LoadEvolutionHistory();
@@ -34,9 +42,11 @@ namespace Schemavolution.EF6
             {
                 string[] initialize =
                 {
+                    _fileName != null ?
                     $@"CREATE DATABASE [{_databaseName}]
                         ON (NAME = '{_databaseName}',
-                        FILENAME = '{_fileName}')",
+                        FILENAME = '{_fileName}')" :
+                    $"CREATE DATABASE [{_databaseName}]",
                     $@"CREATE TABLE [{_databaseName}].[dbo].[__EvolutionHistory](
                         [GeneId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         [Type] VARCHAR(50) NOT NULL,

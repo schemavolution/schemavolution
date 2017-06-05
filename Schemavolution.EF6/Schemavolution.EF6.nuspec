@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Schemavolution.EntityFramework</id>
+    <version>0.8.0</version>
+    <title>Schemavolution.EntityFramework</title>
+    <authors>Michael L Perry</authors>
+    <owners>Michael L Perry</owners>
+    <licenseUrl>http://schemavolution.com/LICENSE.html</licenseUrl>
+    <projectUrl>http://schemavolution.com</projectUrl>
+    <iconUrl>http://schemavolution.com/assets/squarelogo.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Database migrations without merge conflicts</description>
+    <releaseNotes>Beta release</releaseNotes>
+    <copyright>Copyright 2017, Michael L Perry</copyright>
+    <tags>database migration entityframework</tags>
+    <dependencies>
+      <group targetFramework="net45">
+        <dependency id="Schemavolution.Specification" version="0.8.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
