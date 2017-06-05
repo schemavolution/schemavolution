@@ -37,20 +37,20 @@ namespace Schemavolution.EF6
                     $@"CREATE DATABASE [{_databaseName}]
                         ON (NAME = '{_databaseName}',
                         FILENAME = '{_fileName}')",
-                    $@"CREATE TABLE [{_databaseName}].[dbo].[__MergableMigrationHistory](
-                        [MigrationId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                    $@"CREATE TABLE [{_databaseName}].[dbo].[__EvolutionHistory](
+                        [GeneId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         [Type] VARCHAR(50) NOT NULL,
                         [HashCode] VARBINARY(32) NOT NULL,
                         [Attributes] NVARCHAR(MAX) NOT NULL,
-	                    INDEX [IX_MergableMigration_HashCode] UNIQUE ([HashCode]))",
-                    $@"CREATE TABLE [{_databaseName}].[dbo].[__MergableMigrationHistoryPrerequisite] (
-	                    [MigrationId] INT NOT NULL,
+	                    INDEX [IX_EvolutionHistory_HashCode] UNIQUE ([HashCode]))",
+                    $@"CREATE TABLE [{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite] (
+	                    [GeneId] INT NOT NULL,
 	                    [Role] NVARCHAR(50) NOT NULL,
-	                    [PrerequisiteMigrationId] INT NOT NULL,
-	                    INDEX [IX_MergableMigrationPrerequisite_MigrationId] ([MigrationId]),
-	                    FOREIGN KEY ([MigrationId]) REFERENCES [Mathematicians].[dbo].[__MergableMigrationHistory],
-	                    INDEX [IX_MergableMigrationPrerequisite_PrerequisiteMigrationId] ([PrerequisiteMigrationId]),
-	                    FOREIGN KEY ([PrerequisiteMigrationId]) REFERENCES [Mathematicians].[dbo].[__MergableMigrationHistory])"
+	                    [PrerequisiteGeneId] INT NOT NULL,
+	                    INDEX [IX_EvolutionHistoryPrerequisite_GeneId] ([GeneId]),
+	                    FOREIGN KEY ([GeneId]) REFERENCES [{_databaseName}].[dbo].[__EvolutionHistory],
+	                    INDEX [IX_EvolutionHistoryPrerequisite_PrerequisiteMigrationId] ([PrerequisiteGeneId]),
+	                    FOREIGN KEY ([PrerequisiteGeneId]) REFERENCES [{_databaseName}].[dbo].[__EvolutionHistory])"
                 };
                 ExecuteSqlCommands(initialize);
             }
@@ -94,12 +94,12 @@ namespace Schemavolution.EF6
             if (ids.Any())
             {
                 var rows = ExecuteSqlQuery($@"SELECT h.[Type], h.[HashCode], h.[Attributes], j.[Role], p.[HashCode] AS [PrerequisiteHashCode]
-                        FROM [{_databaseName}].[dbo].[__MergableMigrationHistory] h
-                        LEFT JOIN [{_databaseName}].[dbo].[__MergableMigrationHistoryPrerequisite] j
-                          ON h.MigrationId = j.MigrationId
-                        LEFT JOIN [{_databaseName}].[dbo].[__MergableMigrationHistory] p
-                          ON j.PrerequisiteMigrationId = p.MigrationId
-                        ORDER BY h.MigrationId, j.Role, p.MigrationId",
+                        FROM [{_databaseName}].[dbo].[__EvolutionHistory] h
+                        LEFT JOIN [{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite] j
+                          ON h.GeneId = j.GeneId
+                        LEFT JOIN [{_databaseName}].[dbo].[__EvolutionHistory] p
+                          ON j.PrerequisiteGeneId = p.GeneId
+                        ORDER BY h.GeneId, j.Role, p.GeneId",
                     row => new EvolutionHistoryRow
                     {
                         Type = LoadString(row["Type"]),

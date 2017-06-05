@@ -20,14 +20,14 @@ namespace Schemavolution.Specification
 
         public ForeignKeySpecification CreateForeignKey(PrimaryKeySpecification referencing, bool cascadeDelete = false, bool cascadeUpdate = false)
         {
-            var childMigration = new CreateForeignKeyGene(
+            var childGene = new CreateForeignKeyGene(
                 _gene,
                 referencing._gene,
                 cascadeDelete,
                 cascadeUpdate,
                 Prerequisites);
-            EvolutionHistoryBuilder.Append(childMigration);
-            childMigration.AddToParent();
+            EvolutionHistoryBuilder.Append(childGene);
+            childGene.AddToParent();
             return new ForeignKeySpecification(EvolutionHistoryBuilder);
         }
     }

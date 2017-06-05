@@ -10,8 +10,8 @@ namespace Schemavolution.Specification
 
         internal override IEnumerable<Gene> Genes => new[] { _gene };
 
-        internal CustomSqlSpecification(CustomSqlGene gene, EvolutionHistoryBuilder migrationHistoryBuilder) :
-            base(migrationHistoryBuilder)
+        internal CustomSqlSpecification(CustomSqlGene gene, EvolutionHistoryBuilder evolutionHistoryBuilder) :
+            base(evolutionHistoryBuilder)
         {
             _gene = gene;
         }

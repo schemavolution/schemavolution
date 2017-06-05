@@ -88,16 +88,16 @@ namespace Schemavolution.EF6.Generator
             return optimizableGenes;
         }
 
-        private bool Follows(Gene migration, Gene origin)
+        private bool Follows(Gene gene, Gene origin)
         {
-            return migration.AllPrerequisites
+            return gene.AllPrerequisites
                 .Any(p => p == origin || Follows(p, origin));
         }
 
         private string GenerateInsertStatement(string databaseName, IEnumerable<GeneMemento> genes)
         {
             string[] values = genes.Select(gene => GenerateGeneValue(gene)).ToArray();
-            var insert = $@"INSERT INTO [{databaseName}].[dbo].[__MergableMigrationHistory]
+            var insert = $@"INSERT INTO [{databaseName}].[dbo].[__EvolutionHistory]
     ([Type], [HashCode], [Attributes])
     VALUES{String.Join(",", values)}";
             return insert;
@@ -119,8 +119,8 @@ namespace Schemavolution.EF6.Generator
                 from prerequisite in role.Value
                 select new { GeneHashCode = gene.HashCode, Role = role.Key, PrerequisiteHashCode = prerequisite };
             string[] values = joins.Select(join => GeneratePrerequisiteSelect(databaseName, join.GeneHashCode, join.Role, join.PrerequisiteHashCode)).ToArray();
-            string sql = $@"INSERT INTO [{databaseName}].[dbo].[__MergableMigrationHistoryPrerequisite]
-    ([MigrationId], [Role], [PrerequisiteMigrationId]){string.Join(@"
+            string sql = $@"INSERT INTO [{databaseName}].[dbo].[__EvolutionHistoryPrerequisite]
+    ([GeneId], [Role], [PrerequisiteGeneId]){string.Join(@"
 UNION ALL", values)}";
             return sql;
         }
@@ -128,9 +128,9 @@ UNION ALL", values)}";
         string GeneratePrerequisiteSelect(string databaseName, BigInteger geneHashCode, string role, BigInteger prerequisiteHashCode)
         {
             return $@"
-SELECT m.MigrationId, '{role}', p.MigrationId
-FROM [{databaseName}].[dbo].[__MergableMigrationHistory] m,
-     [{databaseName}].[dbo].[__MergableMigrationHistory] p
+SELECT m.GeneId, '{role}', p.GeneId
+FROM [{databaseName}].[dbo].[__EvolutionHistory] m,
+     [{databaseName}].[dbo].[__EvolutionHistory] p
 WHERE m.HashCode = 0x{geneHashCode.ToString("X")} AND p.HashCode = 0x{prerequisiteHashCode.ToString("X")}";
         }
     }

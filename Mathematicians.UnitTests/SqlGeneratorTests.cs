@@ -43,7 +43,7 @@ namespace Mathematicians.UnitTests
         }
 
         [Fact]
-        public void CanSaveMigrationHistory()
+        public void CanSaveEvolutionHistory()
         {
             var mementos = GivenGeneMementos(new Genome());
 

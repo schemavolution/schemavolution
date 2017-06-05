@@ -46,11 +46,11 @@ namespace Schemavolution.EF6.Generator
             string[] sql =
             {
                 $@"DELETE p
-FROM [{databaseName}].[dbo].[__MergableMigrationHistory] m
-JOIN [{databaseName}].[dbo].[__MergableMigrationHistoryPrerequisite] p
-  ON p.MigrationId = m.MigrationId
+FROM [{databaseName}].[dbo].[__EvolutionHistory] m
+JOIN [{databaseName}].[dbo].[__EvolutionHistoryPrerequisite] p
+  ON p.GeneId = m.GeneId
 WHERE m.HashCode IN ({hashCodes})",
-                $@"DELETE FROM [{databaseName}].[dbo].[__MergableMigrationHistory]
+                $@"DELETE FROM [{databaseName}].[dbo].[__EvolutionHistory]
 WHERE HashCode IN ({hashCodes})"
             };
             return sql;
