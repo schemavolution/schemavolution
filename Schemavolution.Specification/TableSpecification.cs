@@ -161,6 +161,21 @@ namespace Schemavolution.Specification
             return CreateColumn(columnName, "UNIQUEIDENTIFIER", nullable);
         }
 
+        public ColumnSpecification CreateBinaryColumn(string columnName, int length, bool nullable = false)
+        {
+            return CreateColumn(columnName, $"VARBINARY({length})", nullable);
+        }
+
+        public ColumnSpecification CreateBinaryMaxColumn(string columnName, bool nullable = false)
+        {
+            return CreateColumn(columnName, $"VARBINARY(MAX)", nullable);
+        }
+
+        public ColumnSpecification CreateFixedBinaryColumn(string columnName, int length, bool nullable = false)
+        {
+            return CreateColumn(columnName, $"BINARY({length})", nullable);
+        }
+
         private ColumnSpecification CreateColumn(string columnName, string typeDescriptor, bool nullable)
         {
             var childGene = new CreateColumnGene(

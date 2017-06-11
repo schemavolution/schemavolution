@@ -43,6 +43,7 @@ namespace Schemavolution.Specification.Genes
             string[] stringTypes = { "NVARCHAR", "NCHAR", "NTEXT" };
             string[] asciiStringTypes = { "VARCHAR", "CHAR", "TEXT" };
             string[] guidTypes = { "UNIQUEIDENTIFIER" };
+            string[] binaryTypes = { "BINARY", "VARBINARY" };
 
             string defaultExpression =
                 _nullable ? null :
@@ -53,6 +54,7 @@ namespace Schemavolution.Specification.Genes
                 stringTypes.Any(t => TypeDescriptor.StartsWith(t)) ? "N''" :
                 asciiStringTypes.Any(t => TypeDescriptor.StartsWith(t)) ? "''" :
                 guidTypes.Any(t => TypeDescriptor.StartsWith(t)) ? "'00000000-0000-0000-0000-000000000000'" :
+                binaryTypes.Any(t => TypeDescriptor.StartsWith(t)) ? "0x" :
                 null;
             if (defaultExpression == null)
             {
