@@ -106,7 +106,7 @@ namespace Schemavolution.EF6.Generator
         private string GenerateGeneValue(GeneMemento gene)
         {
             string attributes = JsonConvert.SerializeObject(gene.Attributes);
-            string hex = $"0x{gene.HashCode.ToString("X")}";
+            string hex = $"0x{gene.HashCode.ToString("X64")}";
             return $@"
     ('{gene.Type}', {hex}, '{attributes.Replace("'", "''")}')";
         }
@@ -131,7 +131,7 @@ UNION ALL", values)}";
 SELECT m.GeneId, '{role}', p.GeneId
 FROM [{databaseName}].[dbo].[__EvolutionHistory] m,
      [{databaseName}].[dbo].[__EvolutionHistory] p
-WHERE m.HashCode = 0x{geneHashCode.ToString("X")} AND p.HashCode = 0x{prerequisiteHashCode.ToString("X")}";
+WHERE m.HashCode = 0x{geneHashCode.ToString("X64")} AND p.HashCode = 0x{prerequisiteHashCode.ToString("X64")}";
         }
     }
 }

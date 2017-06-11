@@ -42,7 +42,7 @@ namespace Schemavolution.EF6.Generator
 
         private string[] GenerateDeleteStatements(string databaseName, IEnumerable<GeneMemento> genes)
         {
-            var hashCodes = string.Join(", ", genes.Select(m => $"0x{m.HashCode.ToString("X")}"));
+            var hashCodes = string.Join(", ", genes.Select(m => $"0x{m.HashCode.ToString("X64")}"));
             string[] sql =
             {
                 $@"DELETE p
