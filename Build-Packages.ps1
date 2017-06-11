@@ -1,14 +1,11 @@
 cd .\Schemavolution.Specification\
-dotnet build
-dotnet pack --include-symbols
+dotnet pack -c Release --include-symbols
 cd ..\
 
 cd .\Schemavolution.DDD\
-dotnet build
-dotnet pack --include-symbols
+dotnet pack -c Release --include-symbols
 cd ..\
 
 cd .\Schemavolution.EF6\
-nuget pack -Build -Prop Configuration=Release
-nuget pack -Symbols
+nuget pack -Build -Prop Configuration=Release -Symbols
 cd ..\
