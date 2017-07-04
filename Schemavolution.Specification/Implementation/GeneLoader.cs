@@ -17,6 +17,8 @@ namespace Schemavolution.Specification.Implementation
                     return CreateTableGene.FromMemento(memento, genesByHashCode);
                 case nameof(CreateColumnGene):
                     return CreateColumnGene.FromMemento(memento, genesByHashCode);
+                case nameof(DropColumnGene):
+                    return DropColumnGene.FromMemento(memento, genesByHashCode);
                 case nameof(CreatePrimaryKeyGene):
                     return CreatePrimaryKeyGene.FromMemento(memento, genesByHashCode);
                 case nameof(CreateUniqueIndexGene):

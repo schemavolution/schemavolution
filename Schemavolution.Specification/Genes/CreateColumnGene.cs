@@ -36,6 +36,16 @@ namespace Schemavolution.Specification.Genes
 
         public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
+            return CreateColumnSql();
+        }
+
+        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
+        {
+            return DropColumnSql();
+        }
+
+        internal string[] CreateColumnSql()
+        {
             string[] identityTypes = { "INT IDENTITY" };
             string[] numericTypes = { "BIGINT", "INT", "SMALLINT", "TINYINT", "MONEY", "SMALLMONEY", "DECIMAL", "FLOAT", "REAL" };
             string[] dateTypes = { "DATETIME", "SMALLDATETIME", "DATETIME2", "TIME" };
@@ -81,10 +91,9 @@ namespace Schemavolution.Specification.Genes
             }
         }
 
-        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
+        internal string[] DropColumnSql()
         {
-            string[] sql =
-            {
+            string[] sql = {
                 $@"ALTER TABLE [{DatabaseName}].[{SchemaName}].[{TableName}]
     DROP COLUMN [{ColumnName}]"
             };

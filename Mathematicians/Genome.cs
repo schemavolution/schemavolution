@@ -24,6 +24,8 @@ namespace Mathematicians
             var birthYear = table.CreateIntColumn("BirthYear");
             var deathYear = table.CreateIntColumn("DeathYear", nullable: true);
 
+            deathYear.DropColumn();
+
             return new AggregateRoot(pk);
         }
 

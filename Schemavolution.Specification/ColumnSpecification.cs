@@ -18,5 +18,14 @@ namespace Schemavolution.Specification
         {
             _gene = gene;
         }
+
+        public void DropColumn()
+        {
+            var childGene = new DropColumnGene(
+                _gene,
+                Prerequisites);
+            EvolutionHistoryBuilder.Append(childGene);
+            childGene.AddToParent();
+        }
     }
 }
