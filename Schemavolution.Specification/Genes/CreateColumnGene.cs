@@ -36,6 +36,7 @@ namespace Schemavolution.Specification.Genes
 
         public override IEnumerable<Gene> AllPrerequisites => Prerequisites
             .Concat(new[] { CreateTableGene });
+        public IEnumerable<ColumnModificationGene> Modifications => _modifications;
 
         internal void AddModification(ColumnModificationGene childGene)
         {
@@ -52,8 +53,7 @@ namespace Schemavolution.Specification.Genes
             {
                 genesAffected.AppendAll(optimizableGenes);
 
-                var drops = optimizableGenes.OfType<DropColumnGene>();
-                if (drops.Any())
+                if (optimizableGenes.OfType<DropColumnGene>().Any())
                     return new string[0];
             }
 
@@ -137,6 +137,8 @@ namespace Schemavolution.Specification.Genes
 
             return sql;
         }
+
+        internal override bool Dropped => _modifications.OfType<DropColumnGene>().Any();
 
         internal override string GenerateDefinitionSql()
         {

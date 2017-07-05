@@ -45,8 +45,12 @@ namespace Schemavolution.Specification.Genes
             {
                 var definitions = optimizableGenes
                     .OfType<TableDefinitionGene>()
+                    .Where(d => !d.Dropped)
                     .Select(d => d.GenerateDefinitionSql());
                 createTable = $"{head}({string.Join(",", definitions)})";
+                optimizableGenes = optimizableGenes.AddRange(optimizableGenes
+                    .OfType<CreateColumnGene>()
+                    .SelectMany(d => d.Modifications));
             }
             else
             {
@@ -67,6 +71,10 @@ namespace Schemavolution.Specification.Genes
             if (gene is TableDefinitionGene definition)
             {
                 return definition.CreateTableGene == this;
+            }
+            else if (gene is DropColumnGene dropColumn)
+            {
+                return dropColumn.CreateColumnGene.CreateTableGene == this;
             }
             else if (gene is CustomSqlGene)
             {
