@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Numerics;
+using System;
 
 namespace Schemavolution.Specification.Genes
 {
-    class DropColumnGene : Gene
+    class DropColumnGene : ColumnModificationGene
     {
         private CreateColumnGene _parent;
 
@@ -15,6 +16,8 @@ namespace Schemavolution.Specification.Genes
         {
             _parent = parent;
         }
+
+        internal override CreateColumnGene CreateColumnGene => _parent;
 
         public override IEnumerable<Gene> AllPrerequisites => Prerequisites
             .Concat(new[] { _parent });

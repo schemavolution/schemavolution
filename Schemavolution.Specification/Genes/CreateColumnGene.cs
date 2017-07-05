@@ -14,6 +14,9 @@ namespace Schemavolution.Specification.Genes
         private readonly string _typeDescriptor;
         private readonly bool _nullable;
 
+        private ImmutableList<ColumnModificationGene> _modifications =
+            ImmutableList<ColumnModificationGene>.Empty;
+
         public string DatabaseName => _parent.DatabaseName;
         public string SchemaName => _parent.SchemaName;
         public string TableName => _parent.TableName;
@@ -34,9 +37,43 @@ namespace Schemavolution.Specification.Genes
         public override IEnumerable<Gene> AllPrerequisites => Prerequisites
             .Concat(new[] { CreateTableGene });
 
+        internal void AddModification(ColumnModificationGene childGene)
+        {
+            _modifications = _modifications.Add(childGene);
+        }
+
         public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
         {
+            var optimizableGenes = _modifications
+                .SelectMany(m => graph.PullPrerequisitesForward(m, this, CanOptimize))
+                .ToImmutableList();
+
+            if (optimizableGenes.Any())
+            {
+                genesAffected.AppendAll(optimizableGenes);
+
+                var drops = optimizableGenes.OfType<DropColumnGene>();
+                if (drops.Any())
+                    return new string[0];
+            }
+
             return CreateColumnSql();
+        }
+
+        private bool CanOptimize(Gene gene)
+        {
+            if (gene is ColumnModificationGene modification)
+            {
+                return modification.CreateColumnGene == this;
+            }
+            else if (gene is CustomSqlGene)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
