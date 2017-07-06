@@ -23,8 +23,9 @@ namespace Mathematicians
             var name = table.CreateStringColumn("Name", 100);
             var birthYear = table.CreateIntColumn("BirthYear");
             var deathYear = table.CreateIntColumn("DeathYear", nullable: true);
+            var specialty = table.CreateStringColumn("Specialty", 50);
 
-            deathYear.DropColumn();
+            specialty.DropColumn();
 
             return new AggregateRoot(pk);
         }
