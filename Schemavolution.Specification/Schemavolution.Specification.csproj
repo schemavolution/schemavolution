@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.4</TargetFramework>
-    <Version>0.8.1</Version>
+    <Version>0.8.2</Version>
     <Authors>Michael L Perry</Authors>
     <Company />
     <Product>Schemavolution</Product>
@@ -15,6 +15,7 @@
     <PackageTags>database migration entityframework</PackageTags>
     <PackageLicenseUrl>http://schemavolution.com/LICENSE.html</PackageLicenseUrl>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageReleaseNotes>Drop column gene</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
