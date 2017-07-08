@@ -34,7 +34,7 @@ namespace Schemavolution.EF6
             _genome = genome;
         }
 
-        public void EvolveDatabase()
+        public bool EvolveDatabase()
         {
             var evolutionHistory = LoadEvolutionHistory();
 
@@ -69,15 +69,19 @@ namespace Schemavolution.EF6
 
             var sql = generator.Generate(_databaseName);
             ExecuteSqlCommands(sql);
+
+            return sql.Any();
         }
 
-        public void DevolveDatabase()
+        public bool DevolveDatabase()
         {
             var evolutionHistory = LoadEvolutionHistory();
             var generator = new SqlGenerator(_genome, evolutionHistory);
             var sql = generator.GenerateRollbackSql(_databaseName);
 
             ExecuteSqlCommands(sql);
+
+            return sql.Any();
         }
 
         public void DestroyDatabase()

@@ -10,11 +10,6 @@ cd .\Schemavolution.DDD\
 dotnet pack -c Release --include-symbols
 cd ..\
 
-Remove-Item .\Schemavolution.EF6\tools\*.dll
-Move-Item .\Schemavolution.EF6.Commands\bin\Release\Schemavolution.EF6.Commands.dll .\Schemavolution.EF6\tools\
-Move-Item .\Schemavolution.EF6.Commands\bin\Release\Schemavolution.EF6.dll .\Schemavolution.EF6\tools\
-Move-Item .\Schemavolution.EF6.Commands\bin\Release\Schemavolution.Specification.dll .\Schemavolution.EF6\tools\
-
 cd .\Schemavolution.EF6\
 nuget pack -Build -Prop Configuration=Release -Symbols
 cd ..\

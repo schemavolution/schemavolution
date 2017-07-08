@@ -20,4 +20,15 @@
       </group>
     </dependencies>
   </metadata>
+  <files>
+    <file src="tools\install.ps1" target="tools"/>
+    <file src="tools\init.ps1" target="tools"/>
+    <file src="tools\Schemavolution.psd1" target="tools"/>
+    <file src="tools\Schemavolution.psm1" target="tools"/>
+    <file src="..\schemav\bin\Release\schemav.exe" target="tools"/>
+    <file src="..\schemav\bin\Release\Schemavolution.EF6.dll" target="tools"/>
+    <file src="..\schemav\bin\Release\Schemavolution.Specification.dll" target="tools"/>
+    <file src="..\schemav\bin\Release\Newtonsoft.Json.dll" target="tools"/>
+    <file src="..\schemav\bin\Release\System.Collections.Immutable.dll" target="tools"/>
+  </files>
 </package>

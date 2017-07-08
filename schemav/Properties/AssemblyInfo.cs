@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Schemavolution.EF6.Commands")]
+[assembly: AssemblyTitle("schemav")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Schemavolution.EF6.Commands")]
+[assembly: AssemblyProduct("schemav")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("d351b351-164e-4e6a-b1af-af7918dfee0f")]
+[assembly: Guid("78c406ba-a69c-4b89-b2b6-07e0aaf2c23a")]
 
 // Version information for an assembly consists of the following four values:
 //

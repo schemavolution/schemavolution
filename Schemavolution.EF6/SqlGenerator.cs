@@ -23,7 +23,7 @@ namespace Schemavolution.EF6
             var ahead = _evolutionHistory.Subtract(newGenes);
             if (ahead.Any)
                 throw new InvalidOperationException(
-                    "The target database is ahead of the desired genome. You can force a rollback, which may destroy data.");
+                    "The target database is ahead of the desired genome. Execute \"Evolve-Database -Force\" or call \"DevolveDatabase()\" on the DatabaseEvolver to roll back, which may destroy data.");
             var difference = newGenes.Subtract(_evolutionHistory);
 
             var generator = new ForwardGenerator(databaseName, difference);

@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D351B351-164E-4E6A-B1AF-AF7918DFEE0F}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Schemavolution.EF6.Commands</RootNamespace>
-    <AssemblyName>Schemavolution.EF6.Commands</AssemblyName>
+    <ProjectGuid>{78C406BA-A69C-4B89-B2B6-07E0AAF2C23A}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>schemav</RootNamespace>
+    <AssemblyName>schemav</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -40,12 +42,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands.cs" />
+    <Compile Include="AssemblyResolver.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Schemavolution.EF6\Schemavolution.EF6.csproj">
-      <Project>{6f10ef50-1323-474b-8d8d-eb48f03e3a9c}</Project>
+      <Project>{6F10EF50-1323-474B-8D8D-EB48F03E3A9C}</Project>
       <Name>Schemavolution.EF6</Name>
     </ProjectReference>
     <ProjectReference Include="..\Schemavolution.Specification\Schemavolution.Specification.csproj">
