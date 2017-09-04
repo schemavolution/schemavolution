@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Schemavolution.EntityFramework</id>
-    <version>0.8.3</version>
+    <version>0.8.4</version>
     <title>Schemavolution.EntityFramework</title>
     <authors>Michael L Perry</authors>
     <owners>Michael L Perry</owners>
