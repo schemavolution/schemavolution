@@ -118,17 +118,17 @@ namespace Schemavolution.EF6.Generator
                 from role in gene.Prerequisites
                 from prerequisite in role.Value
                 select new { GeneHashCode = gene.HashCode, Role = role.Key, PrerequisiteHashCode = prerequisite };
-            string[] values = joins.Select(join => GeneratePrerequisiteSelect(databaseName, join.GeneHashCode, join.Role, join.PrerequisiteHashCode)).ToArray();
+            string[] values = joins.Select((join,i) => GeneratePrerequisiteSelect(databaseName, join.GeneHashCode, join.Role, i+1, join.PrerequisiteHashCode)).ToArray();
             string sql = $@"INSERT INTO [{databaseName}].[dbo].[__EvolutionHistoryPrerequisite]
-    ([GeneId], [Role], [PrerequisiteGeneId]){string.Join(@"
+    ([GeneId], [Role], [Ordinal], [PrerequisiteGeneId]){string.Join(@"
 UNION ALL", values)}";
             return sql;
         }
 
-        string GeneratePrerequisiteSelect(string databaseName, BigInteger geneHashCode, string role, BigInteger prerequisiteHashCode)
+        string GeneratePrerequisiteSelect(string databaseName, BigInteger geneHashCode, string role, int ordinal, BigInteger prerequisiteHashCode)
         {
             return $@"
-SELECT m.GeneId, '{role}', p.GeneId
+SELECT m.GeneId, '{role}', {ordinal}, p.GeneId
 FROM [{databaseName}].[dbo].[__EvolutionHistory] m,
      [{databaseName}].[dbo].[__EvolutionHistory] p
 WHERE m.HashCode = 0x{geneHashCode.ToString("X64")} AND p.HashCode = 0x{prerequisiteHashCode.ToString("X64")}";

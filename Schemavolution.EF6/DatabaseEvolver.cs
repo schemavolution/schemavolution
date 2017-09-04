@@ -56,6 +56,7 @@ namespace Schemavolution.EF6
                     $@"CREATE TABLE [{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite] (
 	                    [GeneId] INT NOT NULL,
 	                    [Role] NVARCHAR(50) NOT NULL,
+                        [Ordinal] INT NOT NULL,
 	                    [PrerequisiteGeneId] INT NOT NULL,
 	                    INDEX [IX_EvolutionHistoryPrerequisite_GeneId] ([GeneId]),
 	                    FOREIGN KEY ([GeneId]) REFERENCES [{_databaseName}].[dbo].[__EvolutionHistory],
@@ -107,13 +108,24 @@ namespace Schemavolution.EF6
                 row => (int)row["database_id"]);
             if (ids.Any())
             {
+                string upgrade = $@"IF COL_LENGTH('[{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite]', 'Ordinal') IS NULL
+                    BEGIN
+	                    ALTER TABLE [{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite]
+	                    ADD [Ordinal] INT NOT NULL
+	                    CONSTRAINT [DF_EvolutionHistoryPrerequisite_Ordinal] DEFAULT (1)
+
+	                    ALTER TABLE [{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite]
+                        DROP CONSTRAINT [DF_EvolutionHistoryPrerequisite_Ordinal]
+                    END";
+                ExecuteSqlCommand(upgrade);
+
                 var rows = ExecuteSqlQuery($@"SELECT h.[Type], h.[HashCode], h.[Attributes], j.[Role], p.[HashCode] AS [PrerequisiteHashCode]
                         FROM [{_databaseName}].[dbo].[__EvolutionHistory] h
                         LEFT JOIN [{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite] j
                           ON h.GeneId = j.GeneId
                         LEFT JOIN [{_databaseName}].[dbo].[__EvolutionHistory] p
                           ON j.PrerequisiteGeneId = p.GeneId
-                        ORDER BY h.GeneId, j.Role, p.GeneId",
+                        ORDER BY h.GeneId, j.Role, j.Ordinal, p.GeneId",
                     row => new EvolutionHistoryRow
                     {
                         Type = LoadString(row["Type"]),
