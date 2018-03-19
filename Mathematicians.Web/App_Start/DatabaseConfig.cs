@@ -1,4 +1,4 @@
-﻿using Schemavolution.EF6;
+﻿using Schemavolution.Sql;
 using System.Data.SqlClient;
 using System.Web;
 

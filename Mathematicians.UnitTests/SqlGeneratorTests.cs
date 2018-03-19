@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Schemavolution.EF6;
+using Schemavolution.Sql;
 using Schemavolution.Specification;
 using Schemavolution.Specification.Implementation;
 using System;

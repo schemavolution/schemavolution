@@ -25,6 +25,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -266,13 +267,13 @@
       <Project>{fe9c23f8-b414-46ab-9ea2-8e8308157c93}</Project>
       <Name>Schemavolution.DDD</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Schemavolution.EF6\Schemavolution.EF6.csproj">
-      <Project>{6f10ef50-1323-474b-8d8d-eb48f03e3a9c}</Project>
-      <Name>Schemavolution.EF6</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Schemavolution.Specification\Schemavolution.Specification.csproj">
       <Project>{a7d7c6e3-aa73-4ff0-b303-1b828b2e3efb}</Project>
       <Name>Schemavolution.Specification</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Schemavolution.Sql\Schemavolution.Sql.csproj">
+      <Project>{23276ec8-9013-4682-b032-b8fb99e784ff}</Project>
+      <Name>Schemavolution.Sql</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

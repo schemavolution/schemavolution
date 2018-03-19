@@ -1,10 +1,10 @@
-﻿using Schemavolution.EF6.Generator;
+﻿using Schemavolution.Sql.Generator;
 using Schemavolution.Specification;
 using Schemavolution.Specification.Implementation;
 using System;
 using System.Linq;
 
-namespace Schemavolution.EF6
+namespace Schemavolution.Sql
 {
     public class SqlGenerator
     {

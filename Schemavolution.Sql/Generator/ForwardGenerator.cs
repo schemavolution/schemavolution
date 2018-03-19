@@ -6,7 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Numerics;
 
-namespace Schemavolution.EF6.Generator
+namespace Schemavolution.Sql.Generator
 {
     class ForwardGenerator : IGraphVisitor
     {

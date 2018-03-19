@@ -50,13 +50,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Schemavolution.EF6\Schemavolution.EF6.csproj">
-      <Project>{6F10EF50-1323-474B-8D8D-EB48F03E3A9C}</Project>
-      <Name>Schemavolution.EF6</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Schemavolution.Specification\Schemavolution.Specification.csproj">
       <Project>{A7D7C6E3-AA73-4FF0-B303-1B828B2E3EFB}</Project>
       <Name>Schemavolution.Specification</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Schemavolution.Sql\Schemavolution.Sql.csproj">
+      <Project>{23276ec8-9013-4682-b032-b8fb99e784ff}</Project>
+      <Name>Schemavolution.Sql</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
