@@ -24,6 +24,24 @@
     <Content Include="tools\Schemavolution.psm1">
       <PackagePath>tools\Schemavolution.psm1</PackagePath>
     </Content>
+    <Content Include="..\schemav\bin\Release\schemav.exe">
+      <PackagePath>tools\schemav.exe</PackagePath>
+    </Content>
+    <Content Include="..\schemav\bin\Release\Schemavolution.Sql.dll">
+      <PackagePath>tools\Schemavolution.Sql.dll</PackagePath>
+    </Content>
+    <Content Include="..\schemav\bin\Release\Schemavolution.Specification.dll">
+      <PackagePath>tools\Schemavolution.Specification.dll</PackagePath>
+    </Content>
+    <Content Include="..\schemav\bin\Release\Newtonsoft.Json.dll">
+      <PackagePath>tools\Newtonsoft.Json.dll</PackagePath>
+    </Content>
+    <Content Include="..\schemav\bin\Release\System.Collections.Immutable.dll">
+      <PackagePath>tools\System.Collections.Immutable.dll</PackagePath>
+    </Content>
+    <Content Include="..\schemav\bin\Release\System.Data.SqlClient.dll">
+      <PackagePath>tools\System.Data.SqlClient.dll</PackagePath>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
