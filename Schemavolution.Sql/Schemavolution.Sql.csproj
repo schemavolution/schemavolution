@@ -5,6 +5,28 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="tools\init.ps1" />
+    <None Remove="tools\install.ps1" />
+    <None Remove="tools\Schemavolution.psd1" />
+    <None Remove="tools\Schemavolution.psm1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="tools\init.ps1">
+      <PackagePath>tools\init.ps1</PackagePath>
+    </Content>
+    <Content Include="tools\install.ps1">
+      <PackagePath>tools\install.ps1</PackagePath>
+    </Content>
+    <Content Include="tools\Schemavolution.psd1">
+      <PackagePath>tools\Schemavolution.psd1</PackagePath>
+    </Content>
+    <Content Include="tools\Schemavolution.psm1">
+      <PackagePath>tools\Schemavolution.psm1</PackagePath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.3" />
   </ItemGroup>
