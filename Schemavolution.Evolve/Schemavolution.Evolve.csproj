@@ -2,6 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.4</TargetFramework>
+    <Version>0.8.2</Version>
+    <Authors>Michael L Perry</Authors>
+    <Company />
+    <Product>Schemavolution</Product>
+    <Description>Database migrations without merge conflicts</Description>
+    <Copyright>Copyright 2017, Michael L Perry</Copyright>
+    <PackageProjectUrl>http://schemavolution.com</PackageProjectUrl>
+    <PackageIconUrl>http://schemavolution.com/assets/squarelogo.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/schemavolution/schemavolution</RepositoryUrl>
+    <RepositoryType></RepositoryType>
+    <PackageTags>database migration entityframework</PackageTags>
+    <PackageLicenseUrl>http://schemavolution.com/LICENSE.html</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>

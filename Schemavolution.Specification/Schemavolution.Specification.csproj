@@ -14,8 +14,6 @@
     <RepositoryType></RepositoryType>
     <PackageTags>database migration entityframework</PackageTags>
     <PackageLicenseUrl>http://schemavolution.com/LICENSE.html</PackageLicenseUrl>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageReleaseNotes>Drop column gene</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
