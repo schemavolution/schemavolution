@@ -57,13 +57,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Schemavolution.Specification\Schemavolution.Specification.csproj">
-      <Project>{A7D7C6E3-AA73-4FF0-B303-1B828B2E3EFB}</Project>
-      <Name>Schemavolution.Specification</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Schemavolution.Evolve\Schemavolution.Evolve.csproj">
       <Project>{23276ec8-9013-4682-b032-b8fb99e784ff}</Project>
       <Name>Schemavolution.Evolve</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Schemavolution.Specification\Schemavolution.Specification.csproj">
+      <Project>{A7D7C6E3-AA73-4FF0-B303-1B828B2E3EFB}</Project>
+      <Name>Schemavolution.Specification</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
