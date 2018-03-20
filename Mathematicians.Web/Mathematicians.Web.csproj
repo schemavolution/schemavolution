@@ -271,9 +271,9 @@
       <Project>{a7d7c6e3-aa73-4ff0-b303-1b828b2e3efb}</Project>
       <Name>Schemavolution.Specification</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Schemavolution.Sql\Schemavolution.Sql.csproj">
+    <ProjectReference Include="..\Schemavolution.Evolve\Schemavolution.Evolve.csproj">
       <Project>{23276ec8-9013-4682-b032-b8fb99e784ff}</Project>
-      <Name>Schemavolution.Sql</Name>
+      <Name>Schemavolution.Evolve</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

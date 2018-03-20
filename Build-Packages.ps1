@@ -10,6 +10,6 @@ cd .\Schemavolution.DDD\
 dotnet pack -c Release --include-symbols
 cd ..\
 
-cd .\Schemavolution.Sql\
+cd .\Schemavolution.Evolve\
 dotnet pack -c Release --include-symbols
 cd ..\

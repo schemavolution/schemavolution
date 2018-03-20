@@ -27,8 +27,8 @@
     <Content Include="..\schemav\bin\Release\schemav.exe">
       <PackagePath>tools\schemav.exe</PackagePath>
     </Content>
-    <Content Include="..\schemav\bin\Release\Schemavolution.Sql.dll">
-      <PackagePath>tools\Schemavolution.Sql.dll</PackagePath>
+    <Content Include="..\schemav\bin\Release\Schemavolution.Evolve.dll">
+      <PackagePath>tools\Schemavolution.Evolve.dll</PackagePath>
     </Content>
     <Content Include="..\schemav\bin\Release\Schemavolution.Specification.dll">
       <PackagePath>tools\Schemavolution.Specification.dll</PackagePath>

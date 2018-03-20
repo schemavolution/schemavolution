@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Schemavolution.Sql.Loader
+namespace Schemavolution.Evolve.Loader
 {
     class LookaheadEnumerator<T>
     {

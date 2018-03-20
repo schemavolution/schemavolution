@@ -1,4 +1,4 @@
-﻿using Schemavolution.Sql.Loader;
+﻿using Schemavolution.Evolve.Loader;
 using Schemavolution.Specification;
 using Schemavolution.Specification.Implementation;
 using Newtonsoft.Json;
@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 
-namespace Schemavolution.Sql
+namespace Schemavolution.Evolve
 {
     public class DatabaseEvolver
     {

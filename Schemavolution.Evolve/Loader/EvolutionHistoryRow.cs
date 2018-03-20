@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Schemavolution.Sql.Loader
+namespace Schemavolution.Evolve.Loader
 {
     class EvolutionHistoryRow
     {

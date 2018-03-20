@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mathematicians.Web", "Mathe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "schemav", "schemav\schemav.csproj", "{78C406BA-A69C-4B89-B2B6-07E0AAF2C23A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Schemavolution.Sql", "Schemavolution.Sql\Schemavolution.Sql.csproj", "{23276EC8-9013-4682-B032-B8FB99E784FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Schemavolution.Evolve", "Schemavolution.Evolve\Schemavolution.Evolve.csproj", "{23276EC8-9013-4682-B032-B8FB99E784FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

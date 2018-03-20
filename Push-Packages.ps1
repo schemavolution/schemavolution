@@ -12,5 +12,5 @@ function PushAllPackages(
 }
 
 PushAllPackages "Schemavolution.Specification\bin\Release\"
-PushAllPackages "Schemavolution.Sql\bin\Release\"
+PushAllPackages "Schemavolution.Evolve\bin\Release\"
 PushAllPackages "Schemavolution.DDD\bin\Release\"
