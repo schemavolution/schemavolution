@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Numerics;
+using Schemavolution.Evolve.Providers;
 using Schemavolution.Specification.Implementation;
 
 namespace Schemavolution.Specification.Genes
@@ -28,7 +29,7 @@ namespace Schemavolution.Specification.Genes
         public override IEnumerable<Gene> AllPrerequisites => Prerequisites
             .Concat(new[] { CreateTableGene });
 
-        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
+        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
             string indexTail = string.Join("_", Columns.Select(c => $"{c.ColumnName}").ToArray());
             string columnList = string.Join(", ", Columns.Select(c => $"[{c.ColumnName}]").ToArray());
@@ -40,7 +41,7 @@ namespace Schemavolution.Specification.Genes
             return sql;
         }
 
-        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
+        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
             string indexTail = string.Join("_", Columns.Select(c => $"{c.ColumnName}").ToArray());
             string[] sql =

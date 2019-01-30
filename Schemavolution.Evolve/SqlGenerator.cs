@@ -1,4 +1,5 @@
 ﻿using Schemavolution.Evolve.Generator;
+using Schemavolution.Evolve.Providers;
 using Schemavolution.Specification;
 using Schemavolution.Specification.Implementation;
 using System;
@@ -10,6 +11,7 @@ namespace Schemavolution.Evolve
     {
         private readonly IGenome _genome;
         private readonly EvolutionHistory _evolutionHistory;
+        private readonly SqlServerProvider _provider = new SqlServerProvider();
 
         public SqlGenerator(IGenome genome, EvolutionHistory evolutionHistory)
         {
@@ -26,7 +28,7 @@ namespace Schemavolution.Evolve
                     "The target database is ahead of the desired genome. Execute \"Evolve-Database -Force\" or call \"DevolveDatabase()\" on the DatabaseEvolver to roll back, which may destroy data.");
             var difference = newGenes.Subtract(_evolutionHistory);
 
-            var generator = new ForwardGenerator(databaseName, difference);
+            var generator = new ForwardGenerator(databaseName, difference, _provider);
 
             while (generator.Any)
             {
@@ -41,7 +43,7 @@ namespace Schemavolution.Evolve
             var newGenes = GetEvolutionHistory(databaseName);
             var ahead = _evolutionHistory.Subtract(newGenes);
 
-            var generator = new RollbackGenerator(databaseName, ahead);
+            var generator = new RollbackGenerator(databaseName, ahead, _provider);
 
             while (generator.Any)
             {

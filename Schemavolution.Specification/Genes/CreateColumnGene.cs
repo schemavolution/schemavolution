@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Linq;
 using System.Collections.Immutable;
+using Schemavolution.Evolve.Providers;
 
 namespace Schemavolution.Specification.Genes
 {
@@ -43,7 +44,7 @@ namespace Schemavolution.Specification.Genes
             _modifications = _modifications.Add(childGene);
         }
 
-        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
+        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
             var optimizableGenes = _modifications
                 .SelectMany(m => graph.PullPrerequisitesForward(m, this, CanOptimize))
@@ -57,7 +58,7 @@ namespace Schemavolution.Specification.Genes
                     return new string[0];
             }
 
-            return CreateColumnSql();
+            return provider.GenerateCreateColumn(DatabaseName, SchemaName, TableName, ColumnName, TypeDescriptor, Nullable);
         }
 
         private bool CanOptimize(Gene gene)
@@ -76,56 +77,14 @@ namespace Schemavolution.Specification.Genes
             }
         }
 
-        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
+        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
             return DropColumnSql();
         }
 
-        internal string[] CreateColumnSql()
+        internal string[] CreateColumnSql(IDatabaseProvider provider)
         {
-            string[] identityTypes = { "INT IDENTITY" };
-            string[] numericTypes = { "BIGINT", "INT", "SMALLINT", "TINYINT", "MONEY", "SMALLMONEY", "DECIMAL", "FLOAT", "REAL" };
-            string[] dateTypes = { "DATETIME", "SMALLDATETIME", "DATETIME2", "TIME" };
-            string[] dateTimeOffsetTypes = { "DATETIMEOFFSET" };
-            string[] stringTypes = { "NVARCHAR", "NCHAR", "NTEXT" };
-            string[] asciiStringTypes = { "VARCHAR", "CHAR", "TEXT" };
-            string[] guidTypes = { "UNIQUEIDENTIFIER" };
-            string[] binaryTypes = { "BINARY", "VARBINARY" };
-
-            string defaultExpression =
-                _nullable ? null :
-                identityTypes.Any(t => TypeDescriptor.StartsWith(t)) ? null :
-                numericTypes.Any(t => TypeDescriptor.StartsWith(t)) ? "0" :
-                dateTypes.Any(t => TypeDescriptor.StartsWith(t)) ? "GETUTCDATE()" :
-                dateTimeOffsetTypes.Any(t => TypeDescriptor.StartsWith(t)) ? "SYSDATETIMEOFFSET()" :
-                stringTypes.Any(t => TypeDescriptor.StartsWith(t)) ? "N''" :
-                asciiStringTypes.Any(t => TypeDescriptor.StartsWith(t)) ? "''" :
-                guidTypes.Any(t => TypeDescriptor.StartsWith(t)) ? "'00000000-0000-0000-0000-000000000000'" :
-                binaryTypes.Any(t => TypeDescriptor.StartsWith(t)) ? "0x" :
-                null;
-            if (defaultExpression == null)
-            {
-                string[] sql =
-                {
-                    $@"ALTER TABLE [{DatabaseName}].[{SchemaName}].[{TableName}]
-    ADD [{ColumnName}] {TypeDescriptor} {NullableClause}"
-                };
-
-                return sql;
-            }
-            else
-            {
-                string[] sql =
-                {
-                    $@"ALTER TABLE [{DatabaseName}].[{SchemaName}].[{TableName}]
-    ADD [{ColumnName}] {TypeDescriptor} {NullableClause}
-    CONSTRAINT [DF_{TableName}_{ColumnName}] DEFAULT ({defaultExpression})",
-                    $@"ALTER TABLE [{DatabaseName}].[{SchemaName}].[{TableName}]
-    DROP CONSTRAINT [DF_{TableName}_{ColumnName}]",
-                };
-
-                return sql;
-            }
+            return provider.GenerateCreateColumn(DatabaseName, SchemaName, TableName, ColumnName, TypeDescriptor, _nullable);
         }
 
         internal string[] DropColumnSql()

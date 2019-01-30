@@ -4,6 +4,7 @@ using System.Numerics;
 using Schemavolution.Specification.Implementation;
 using System.Linq;
 using System.Collections.Immutable;
+using Schemavolution.Evolve.Providers;
 
 namespace Schemavolution.Specification.Genes
 {
@@ -24,13 +25,13 @@ namespace Schemavolution.Specification.Genes
 
         public override IEnumerable<Gene> AllPrerequisites => Prerequisites;
 
-        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
+        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
             string[] sql = { };
             return sql;
         }
 
-        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
+        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
             throw new NotImplementedException();
         }

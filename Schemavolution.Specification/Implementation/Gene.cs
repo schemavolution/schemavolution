@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Schemavolution.Evolve.Providers;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Numerics;
@@ -19,8 +20,8 @@ namespace Schemavolution.Specification.Implementation
         }
 
         public abstract IEnumerable<Gene> AllPrerequisites { get; }
-        public abstract string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph);
-        public abstract string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph);
+        public abstract string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider);
+        public abstract string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider);
         internal abstract GeneMemento GetMemento();
         protected abstract BigInteger ComputeSha256Hash();
 

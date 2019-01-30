@@ -1,24 +1,25 @@
-﻿using Schemavolution.Specification.Implementation;
-using Newtonsoft.Json;
+﻿using Schemavolution.Evolve.Providers;
+using Schemavolution.Specification.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Numerics;
 
 namespace Schemavolution.Evolve.Generator
 {
     class ForwardGenerator : IGraphVisitor
     {
         private readonly string _databaseName;
+        private readonly SqlServerProvider _provider;
 
         private EvolutionDelta _difference;
         private ImmutableList<string> _sql = ImmutableList<string>.Empty;
         private ImmutableStack<Gene> _working = ImmutableStack<Gene>.Empty;
 
-        public ForwardGenerator(string databaseName, EvolutionDelta difference)
+        public ForwardGenerator(string databaseName, EvolutionDelta difference, SqlServerProvider provider)
         {
             _databaseName = databaseName;
+            _provider = provider;
             _difference = difference;
         }
 
@@ -42,12 +43,12 @@ namespace Schemavolution.Evolve.Generator
 
             var genesAffected = new EvolutionHistoryBuilder();
             genesAffected.Append(gene);
-            string[] result = gene.GenerateSql(genesAffected, this);
+            string[] result = gene.GenerateSql(genesAffected, this, _provider);
             _sql = _sql.AddRange(result);
             var mementos = genesAffected.EvolutionHistory.GetMementos().ToList();
-            _sql = _sql.Add(GenerateInsertStatement(_databaseName, mementos));
+            _sql = _sql.Add(_provider.GenerateInsertStatement(_databaseName, mementos));
             if (mementos.SelectMany(m => m.Prerequisites).SelectMany(p => p.Value).Any())
-                _sql = _sql.Add(GeneratePrerequisiteInsertStatements(_databaseName, mementos));
+                _sql = _sql.Add(_provider.GeneratePrerequisiteInsertStatements(_databaseName, mementos));
             _difference = _difference.Subtract(genesAffected.EvolutionHistory);
 
             _working = _working.Pop();
@@ -92,46 +93,6 @@ namespace Schemavolution.Evolve.Generator
         {
             return gene.AllPrerequisites
                 .Any(p => p == origin || Follows(p, origin));
-        }
-
-        private string GenerateInsertStatement(string databaseName, IEnumerable<GeneMemento> genes)
-        {
-            string[] values = genes.Select(gene => GenerateGeneValue(gene)).ToArray();
-            var insert = $@"INSERT INTO [{databaseName}].[dbo].[__EvolutionHistory]
-    ([Type], [HashCode], [Attributes])
-    VALUES{String.Join(",", values)}";
-            return insert;
-        }
-
-        private string GenerateGeneValue(GeneMemento gene)
-        {
-            string attributes = JsonConvert.SerializeObject(gene.Attributes);
-            string hex = $"0x{gene.HashCode.ToString("X64")}";
-            return $@"
-    ('{gene.Type}', {hex}, '{attributes.Replace("'", "''")}')";
-        }
-
-        private string GeneratePrerequisiteInsertStatements(string databaseName, IEnumerable<GeneMemento> genes)
-        {
-            var joins =
-                from gene in genes
-                from role in gene.Prerequisites
-                from prerequisite in role.Value
-                select new { GeneHashCode = gene.HashCode, Role = role.Key, PrerequisiteHashCode = prerequisite };
-            string[] values = joins.Select((join,i) => GeneratePrerequisiteSelect(databaseName, join.GeneHashCode, join.Role, i+1, join.PrerequisiteHashCode)).ToArray();
-            string sql = $@"INSERT INTO [{databaseName}].[dbo].[__EvolutionHistoryPrerequisite]
-    ([GeneId], [Role], [Ordinal], [PrerequisiteGeneId]){string.Join(@"
-UNION ALL", values)}";
-            return sql;
-        }
-
-        string GeneratePrerequisiteSelect(string databaseName, BigInteger geneHashCode, string role, int ordinal, BigInteger prerequisiteHashCode)
-        {
-            return $@"
-SELECT m.GeneId, '{role}', {ordinal}, p.GeneId
-FROM [{databaseName}].[dbo].[__EvolutionHistory] m,
-     [{databaseName}].[dbo].[__EvolutionHistory] p
-WHERE m.HashCode = 0x{geneHashCode.ToString("X64")} AND p.HashCode = 0x{prerequisiteHashCode.ToString("X64")}";
         }
     }
 }

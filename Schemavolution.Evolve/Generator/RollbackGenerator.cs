@@ -3,19 +3,22 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System;
+using Schemavolution.Evolve.Providers;
 
 namespace Schemavolution.Evolve.Generator
 {
     class RollbackGenerator : IGraphVisitor
     {
         private readonly string _databaseName;
+        private readonly IDatabaseProvider _provider;
 
         private ImmutableList<string> _sql = ImmutableList<string>.Empty;
         private EvolutionDelta _ahead;
 
-        public RollbackGenerator(string databaseName, EvolutionDelta ahead)
+        public RollbackGenerator(string databaseName, EvolutionDelta ahead, IDatabaseProvider provider)
         {
             _databaseName = databaseName;
+            _provider = provider;
             _ahead = ahead;
         }
 
@@ -27,7 +30,7 @@ namespace Schemavolution.Evolve.Generator
         {
             var genesAffected = new EvolutionHistoryBuilder();
             genesAffected.Append(gene);
-            string[] rollbackSql = gene.GenerateRollbackSql(genesAffected, this);
+            string[] rollbackSql = gene.GenerateRollbackSql(genesAffected, this, _provider);
             var mementos = genesAffected.EvolutionHistory.GetMementos().ToList();
             string[] deleteStatements = GenerateDeleteStatements(_databaseName, mementos);
             _sql = _sql.InsertRange(0, deleteStatements);

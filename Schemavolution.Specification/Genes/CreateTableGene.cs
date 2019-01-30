@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Numerics;
+using Schemavolution.Evolve.Providers;
 using Schemavolution.Specification.Implementation;
 
 namespace Schemavolution.Specification.Genes
@@ -34,10 +35,9 @@ namespace Schemavolution.Specification.Genes
             _definitions = _definitions.Add(childGene);
         }
 
-        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
+        public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
             string createTable;
-            string head = $"CREATE TABLE [{DatabaseName}].[{SchemaName}].[{TableName}]";
             var optimizableGenes = _definitions
                 .SelectMany(m => graph.PullPrerequisitesForward(m, this, CanOptimize))
                 .ToImmutableList();
@@ -47,14 +47,14 @@ namespace Schemavolution.Specification.Genes
                     .OfType<TableDefinitionGene>()
                     .Where(d => !d.Dropped)
                     .Select(d => d.GenerateDefinitionSql());
-                createTable = $"{head}({string.Join(",", definitions)})";
+                createTable = provider.GenerateCreateTable(DatabaseName, SchemaName, TableName, definitions);
                 optimizableGenes = optimizableGenes.AddRange(optimizableGenes
                     .OfType<CreateColumnGene>()
                     .SelectMany(d => d.Modifications));
             }
             else
             {
-                createTable = head;
+                createTable = provider.GenerateCreateTable(DatabaseName, SchemaName, TableName, Enumerable.Empty<string>());
             }
 
             string[] sql =
@@ -86,15 +86,20 @@ namespace Schemavolution.Specification.Genes
             }
         }
 
-        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph)
+        public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
             string[] sql =
             {
-                $"DROP TABLE [{DatabaseName}].[{SchemaName}].[{TableName}]"
+                GenerateDropTable(DatabaseName, SchemaName, TableName)
             };
             genesAffected.AppendAll(_definitions);
 
             return sql;
+        }
+
+        private static string GenerateDropTable(string databaseName, string schemaName, string tableName)
+        {
+            return $"DROP TABLE [{databaseName}].[{schemaName}].[{tableName}]";
         }
 
         protected override BigInteger ComputeSha256Hash()
