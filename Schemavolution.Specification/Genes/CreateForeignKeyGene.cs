@@ -63,7 +63,7 @@ namespace Schemavolution.Specification.Genes
             return sql;
         }
 
-        internal override string GenerateDefinitionSql()
+        internal override string GenerateDefinitionSql(IDatabaseProvider provider)
         {
             string indexTail = string.Join("_", Columns.Select(c => $"{c.ColumnName}").ToArray());
             string columnList = string.Join(", ", Columns.Select(c => $"[{c.ColumnName}]").ToArray());

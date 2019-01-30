@@ -46,7 +46,7 @@ namespace Schemavolution.Specification.Genes
                 var definitions = optimizableGenes
                     .OfType<TableDefinitionGene>()
                     .Where(d => !d.Dropped)
-                    .Select(d => d.GenerateDefinitionSql());
+                    .Select(d => d.GenerateDefinitionSql(provider));
                 createTable = provider.GenerateCreateTable(DatabaseName, SchemaName, TableName, definitions);
                 optimizableGenes = optimizableGenes.AddRange(optimizableGenes
                     .OfType<CreateColumnGene>()
@@ -90,16 +90,11 @@ namespace Schemavolution.Specification.Genes
         {
             string[] sql =
             {
-                GenerateDropTable(DatabaseName, SchemaName, TableName)
+                provider.GenerateDropTable(DatabaseName, SchemaName, TableName)
             };
             genesAffected.AppendAll(_definitions);
 
             return sql;
-        }
-
-        private static string GenerateDropTable(string databaseName, string schemaName, string tableName)
-        {
-            return $"DROP TABLE [{databaseName}].[{schemaName}].[{tableName}]";
         }
 
         protected override BigInteger ComputeSha256Hash()

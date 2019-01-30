@@ -79,32 +79,15 @@ namespace Schemavolution.Specification.Genes
 
         public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
-            return DropColumnSql();
-        }
-
-        internal string[] CreateColumnSql(IDatabaseProvider provider)
-        {
-            return provider.GenerateCreateColumn(DatabaseName, SchemaName, TableName, ColumnName, TypeDescriptor, _nullable);
-        }
-
-        internal string[] DropColumnSql()
-        {
-            string[] sql = {
-                $@"ALTER TABLE [{DatabaseName}].[{SchemaName}].[{TableName}]
-    DROP COLUMN [{ColumnName}]"
-            };
-
-            return sql;
+            return provider.GenerateDropColumn(DatabaseName, SchemaName, TableName, ColumnName);
         }
 
         internal override bool Dropped => _modifications.OfType<DropColumnGene>().Any();
 
-        internal override string GenerateDefinitionSql()
+        internal override string GenerateDefinitionSql(IDatabaseProvider provider)
         {
-            return $"\r\n    [{ColumnName}] {TypeDescriptor} {NullableClause}";
+            return provider.GenerateColumnDefinition(ColumnName, TypeDescriptor, Nullable);
         }
-
-        private string NullableClause => $"{(Nullable ? "NULL" : "NOT NULL")}";
 
         protected override BigInteger ComputeSha256Hash()
         {

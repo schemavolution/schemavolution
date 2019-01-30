@@ -31,33 +31,17 @@ namespace Schemavolution.Specification.Genes
 
         public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
-            string indexTail = string.Join("_", Columns.Select(c => $"{c.ColumnName}").ToArray());
-            string columnList = string.Join(", ", Columns.Select(c => $"[{c.ColumnName}]").ToArray());
-            string[] sql =
-            {
-                $"CREATE NONCLUSTERED INDEX [IX_{TableName}_{indexTail}] ON [{DatabaseName}].[{SchemaName}].[{TableName}] ({columnList})"
-            };
-
-            return sql;
+            return provider.GenerateCreateIndex(DatabaseName, SchemaName, TableName, Columns.Select(c => c.ColumnName));
         }
 
         public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
-            string indexTail = string.Join("_", Columns.Select(c => $"{c.ColumnName}").ToArray());
-            string[] sql =
-            {
-                $"DROP INDEX [IX_{TableName}_{indexTail}] ON [{DatabaseName}].[{SchemaName}].[{TableName}]"
-            };
-
-            return sql;
+            return provider.GenerateDropIndex(DatabaseName, SchemaName, TableName, Columns.Select(c => c.ColumnName));
         }
 
-        internal override string GenerateDefinitionSql()
+        internal override string GenerateDefinitionSql(IDatabaseProvider provider)
         {
-            string indexTail = string.Join("_", _columns.Select(c => $"{c.ColumnName}").ToArray());
-            string columnList = string.Join(", ", _columns.Select(c => $"[{c.ColumnName}]").ToArray());
-
-            return $"\r\n    INDEX [IX_{TableName}_{indexTail}] NONCLUSTERED ({columnList})";
+            return provider.GenerateIndexDefinition(TableName, Columns.Select(c => c.ColumnName));
         }
 
         protected override BigInteger ComputeSha256Hash()

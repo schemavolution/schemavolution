@@ -1,4 +1,5 @@
-﻿using Schemavolution.Specification.Implementation;
+﻿using Schemavolution.Evolve.Providers;
+using Schemavolution.Specification.Implementation;
 using System.Collections.Immutable;
 
 namespace Schemavolution.Specification.Genes
@@ -7,7 +8,7 @@ namespace Schemavolution.Specification.Genes
     {
         internal abstract CreateTableGene CreateTableGene { get; }
         internal virtual bool Dropped => false;
-        internal abstract string GenerateDefinitionSql();
+        internal abstract string GenerateDefinitionSql(IDatabaseProvider provider);
 
         public TableDefinitionGene(ImmutableList<Gene> prerequisites)
             : base(prerequisites)

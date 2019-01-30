@@ -58,6 +58,11 @@ WHERE m.HashCode = 0x{geneHashCode.ToString("X64")} AND p.HashCode = 0x{prerequi
                 return head;
         }
 
+        public string GenerateDropTable(string databaseName, string schemaName, string tableName)
+        {
+            return $"DROP TABLE [{databaseName}].[{schemaName}].[{tableName}]";
+        }
+
         public string[] GenerateCreateColumn(string databaseName, string schemaName, string tableName, string columnName, string typeDescriptor, bool nullable)
         {
             string[] identityTypes = { "INT IDENTITY" };
@@ -103,6 +108,106 @@ WHERE m.HashCode = 0x{geneHashCode.ToString("X64")} AND p.HashCode = 0x{prerequi
 
                 return sql;
             }
+        }
+
+        public string[] GenerateDropColumn(string databaseName, string schemaName, string tableName, string columnName)
+        {
+            return new string[] {
+                $@"ALTER TABLE [{databaseName}].[{schemaName}].[{tableName}]
+    DROP COLUMN [{columnName}]"
+            };
+        }
+
+        public string GenerateColumnDefinition(string columnName, string typeDescriptor, bool nullable)
+        {
+            return $"\r\n    [{columnName}] {typeDescriptor} {(nullable ? "NULL" : "NOT NULL")}";
+        }
+
+        public string[] GenerateCreatePrimaryKey(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
+        {
+            string quotedColumnNames = string.Join(", ", columnNames.Select(c => $"[{c}]").ToArray());
+            string[] sql =
+            {
+                $"ALTER TABLE [{databaseName}].[{schemaName}].[{tableName}]\r\n    ADD CONSTRAINT [PK_{tableName}] PRIMARY KEY CLUSTERED ({quotedColumnNames})"
+            };
+
+            return sql;
+        }
+
+        public string[] GenerateDropPrimaryKey(string databaseName, string schemaName, string tableName)
+        {
+            return new string[] {
+                $"ALTER TABLE [{databaseName}].[{schemaName}].[{tableName}]\r\n    DROP CONSTRAINT [PK_{tableName}]"
+            };
+        }
+
+        public string GeneratePrimaryKeyDefinition(string tableName, IEnumerable<string> columnNames)
+        {
+            string quotedColumnNames = string.Join(", ", columnNames.Select(c => $"[{c}]").ToArray());
+
+            return $"\r\n    CONSTRAINT [PK_{tableName}] PRIMARY KEY CLUSTERED ({quotedColumnNames})";
+        }
+
+        public string[] GenerateCreateIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
+        {
+            string indexTail = string.Join("_", columnNames.ToArray());
+            string columnList = string.Join(", ", columnNames.Select(c => $"[{c}]").ToArray());
+            string[] sql =
+            {
+                $"CREATE NONCLUSTERED INDEX [IX_{tableName}_{indexTail}] ON [{databaseName}].[{schemaName}].[{tableName}] ({columnList})"
+            };
+
+            return sql;
+        }
+
+        public string[] GenerateDropIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
+        {
+            string indexTail = string.Join("_", columnNames.ToArray());
+            string[] sql =
+            {
+                $"DROP INDEX [IX_{tableName}_{indexTail}] ON [{databaseName}].[{schemaName}].[{tableName}]"
+            };
+
+            return sql;
+        }
+
+        public string GenerateIndexDefinition(string tableName, IEnumerable<string> columnNames)
+        {
+            string indexTail = string.Join("_", columnNames.ToArray());
+            string columnList = string.Join(", ", columnNames.Select(c => $"[{c}]").ToArray());
+
+            return $"\r\n    INDEX [IX_{tableName}_{indexTail}] NONCLUSTERED ({columnList})";
+        }
+
+        public string[] GenerateCreateUniqueIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
+        {
+            string indexTail = string.Join("_", columnNames.ToArray());
+            string columnList = string.Join(", ", columnNames.Select(c => $"[{c}]").ToArray());
+            string[] sql =
+            {
+                $"CREATE UNIQUE NONCLUSTERED INDEX [UX_{tableName}_{indexTail}] ON [{databaseName}].[{schemaName}].[{tableName}] ({columnList})"
+            };
+
+            return sql;
+        }
+
+        public string[] GenerateDropUniqueIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
+        {
+            string indexTail = string.Join("_", columnNames.ToArray());
+            string[] sql =
+            {
+                $"DROP INDEX [UX_{tableName}_{indexTail}] ON [{databaseName}].[{schemaName}].[{tableName}]"
+            };
+
+            return sql;
+        }
+
+        public string GenerateUniqueIndexDefinition(string tableName, IEnumerable<string> columnNames)
+        {
+            string indexTail = string.Join("_", columnNames.ToArray());
+            string columnList = string.Join(", ", columnNames.Select(c => $"[{c}]").ToArray());
+
+            return $"\r\n    INDEX [UX_{tableName}_{indexTail}] UNIQUE NONCLUSTERED ({columnList})";
         }
     }
 }

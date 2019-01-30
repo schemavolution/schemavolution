@@ -25,7 +25,7 @@ namespace Schemavolution.Specification.Genes
 
         public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
-            return _parent.DropColumnSql();
+            return provider.GenerateDropColumn(_parent.DatabaseName, _parent.SchemaName, _parent.TableName, _parent.ColumnName);
         }
 
         public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)

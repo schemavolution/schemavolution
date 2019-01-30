@@ -31,30 +31,17 @@ namespace Schemavolution.Specification.Genes
 
         public override string[] GenerateSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
-            string columnNames = string.Join(", ", _columns.Select(c => $"[{c.ColumnName}]").ToArray());
-            string[] sql =
-            {
-                $"ALTER TABLE [{DatabaseName}].[{SchemaName}].[{TableName}]\r\n    ADD CONSTRAINT [PK_{TableName}] PRIMARY KEY CLUSTERED ({columnNames})"
-            };
-
-            return sql;
+            return provider.GenerateCreatePrimaryKey(DatabaseName, SchemaName, TableName, _columns.Select(c => c.ColumnName));
         }
 
         public override string[] GenerateRollbackSql(EvolutionHistoryBuilder genesAffected, IGraphVisitor graph, IDatabaseProvider provider)
         {
-            string[] sql =
-            {
-                $"ALTER TABLE [{DatabaseName}].[{SchemaName}].[{TableName}]\r\n    DROP CONSTRAINT [PK_{TableName}]"
-            };
-
-            return sql;
+            return provider.GenerateDropPrimaryKey(DatabaseName, SchemaName, TableName);
         }
 
-        internal override string GenerateDefinitionSql()
+        internal override string GenerateDefinitionSql(IDatabaseProvider provider)
         {
-            string columnNames = string.Join(", ", _columns.Select(c => $"[{c.ColumnName}]").ToArray());
-
-            return $"\r\n    CONSTRAINT [PK_{TableName}] PRIMARY KEY CLUSTERED ({columnNames})";
+            return provider.GeneratePrimaryKeyDefinition(TableName, _columns.Select(c => c.ColumnName));
         }
 
         protected override BigInteger ComputeSha256Hash()
