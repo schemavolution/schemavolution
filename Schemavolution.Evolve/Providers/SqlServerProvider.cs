@@ -9,6 +9,32 @@ namespace Schemavolution.Evolve.Providers
 {
     class SqlServerProvider : IDatabaseProvider
     {
+        public string[] GenerateInitialization(string databaseName, string fileName)
+        {
+            return new string[]{
+                fileName != null ?
+                $@"CREATE DATABASE [{databaseName}]
+                        ON (NAME = '{databaseName}',
+                        FILENAME = '{fileName}')" :
+                $"CREATE DATABASE [{databaseName}]",
+                $@"CREATE TABLE [{databaseName}].[dbo].[__EvolutionHistory](
+                        [GeneId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                        [Type] VARCHAR(50) NOT NULL,
+                        [HashCode] VARBINARY(32) NOT NULL,
+                        [Attributes] NVARCHAR(MAX) NOT NULL,
+	                    INDEX [IX_EvolutionHistory_HashCode] UNIQUE ([HashCode]))",
+                $@"CREATE TABLE [{databaseName}].[dbo].[__EvolutionHistoryPrerequisite] (
+	                    [GeneId] INT NOT NULL,
+	                    [Role] NVARCHAR(50) NOT NULL,
+                        [Ordinal] INT NOT NULL,
+	                    [PrerequisiteGeneId] INT NOT NULL,
+	                    INDEX [IX_EvolutionHistoryPrerequisite_GeneId] ([GeneId]),
+	                    FOREIGN KEY ([GeneId]) REFERENCES [{databaseName}].[dbo].[__EvolutionHistory],
+	                    INDEX [IX_EvolutionHistoryPrerequisite_PrerequisiteMigrationId] ([PrerequisiteGeneId]),
+	                    FOREIGN KEY ([PrerequisiteGeneId]) REFERENCES [{databaseName}].[dbo].[__EvolutionHistory])"
+            };
+        }
+
         public string GenerateInsertStatement(string databaseName, IEnumerable<GeneMemento> genes)
         {
             string[] values = genes.Select(gene => GenerateGeneValue(gene)).ToArray();

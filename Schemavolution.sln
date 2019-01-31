@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "schemav", "schemav\schemav.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Schemavolution.Evolve", "Schemavolution.Evolve\Schemavolution.Evolve.csproj", "{23276EC8-9013-4682-B032-B8FB99E784FF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JinagaDb", "JinagaDb\JinagaDb.csproj", "{84A00F13-5DC2-4D1F-889B-5C44800075CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{23276EC8-9013-4682-B032-B8FB99E784FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23276EC8-9013-4682-B032-B8FB99E784FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23276EC8-9013-4682-B032-B8FB99E784FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84A00F13-5DC2-4D1F-889B-5C44800075CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84A00F13-5DC2-4D1F-889B-5C44800075CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84A00F13-5DC2-4D1F-889B-5C44800075CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84A00F13-5DC2-4D1F-889B-5C44800075CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

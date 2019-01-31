@@ -7,6 +7,7 @@ namespace Schemavolution.Evolve.Providers
 {
     public interface IDatabaseProvider
     {
+        string[] GenerateInitialization(string databaseName, string fileName);
         string GenerateInsertStatement(string databaseName, IEnumerable<GeneMemento> genes);
         string GeneratePrerequisiteInsertStatements(string databaseName, IEnumerable<GeneMemento> genes);
         string GenerateCreateTable(string databaseName, string schemaName, string tableName, IEnumerable<string> definitions);

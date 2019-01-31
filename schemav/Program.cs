@@ -9,24 +9,47 @@ namespace schemav
 {
     class Program
     {
+        const int MSSqlServer = 0x01;
+        const int PostgreSQL = 0x02;
+
         static void Main(string[] args)
         {
-            if (args.Length == 3)
+            var flags = args.Where(a => a.StartsWith("-")).ToArray();
+            var parameters = args.Where(a => !a.StartsWith("-")).ToArray();
+            var force = flags.Contains("-f");
+            var provider =
+                (flags.Contains("-pg") ? PostgreSQL : 0) |
+                (flags.Contains("-ms") ? MSSqlServer : 0);
+
+            if (parameters.Length == 3 &&
+                (provider == PostgreSQL || provider == MSSqlServer))
             {
-                EvolveDatabase(args[0], args[1], args[2], false);
-            }
-            else if (args.Length == 4)
-            {
-                EvolveDatabase(args[0], args[1], args[2], args[3] == "-f");
+                string assemblyPath = parameters[0];
+                string databaseName = parameters[1];
+                string masterConnectionString = parameters[2];
+                EvolveDatabase(assemblyPath, force, g =>
+                    provider == MSSqlServer ? DatabaseEvolver
+                        .ForSqlServer(databaseName, masterConnectionString, g) :
+                    provider == PostgreSQL ? DatabaseEvolver
+                        .ForPostgreSQL(databaseName, masterConnectionString, g) :
+                    null);
             }
             else
             {
                 Console.WriteLine("schemav");
                 Console.WriteLine("  Schemavolution command line interface");
+                Console.WriteLine();
+                Console.WriteLine("  schemav <assembly path> <database name> <master connection string>");
+                Console.WriteLine("");
+                Console.WriteLine("  Flags:");
+                Console.WriteLine("    -f  Force (optional) - Devolve the database.");
+                Console.WriteLine("                           Required after genes have been deleted.");
+                Console.WriteLine("    -pg PostgreSQL       - Exactly one provider must be selected.");
+                Console.WriteLine("    -ms MS SQL Server");
             }
         }
 
-        private static void EvolveDatabase(string assemblyPath, string databaseName, string masterConnectionString, bool force)
+        private static void EvolveDatabase(string assemblyPath, bool force, Func<IGenome, DatabaseEvolver> createEvolver)
         {
             string assemblyDirectory = Directory.GetParent(assemblyPath).FullName;
             var resolver = new AssemblyResolver(AppDomain.CurrentDomain, assemblyDirectory);
@@ -44,10 +67,7 @@ namespace schemav
                 var genomeTypeName = genomeTypes.Single().FullName;
                 var genome = (IGenome)assembly.CreateInstance(genomeTypeName);
 
-                var evolver = new DatabaseEvolver(
-                    databaseName,
-                    masterConnectionString,
-                    genome);
+                var evolver = createEvolver(genome);
                 if (force)
                 {
                     if (evolver.DevolveDatabase())

@@ -11,12 +11,13 @@ namespace Schemavolution.Evolve
     {
         private readonly IGenome _genome;
         private readonly EvolutionHistory _evolutionHistory;
-        private readonly SqlServerProvider _provider = new SqlServerProvider();
+        private readonly IDatabaseProvider _provider;
 
-        public SqlGenerator(IGenome genome, EvolutionHistory evolutionHistory)
+        public SqlGenerator(IGenome genome, EvolutionHistory evolutionHistory, IDatabaseProvider provider)
         {
             _genome = genome;
             _evolutionHistory = evolutionHistory;
+            _provider = provider;
         }
 
         public string[] Generate(string databaseName)

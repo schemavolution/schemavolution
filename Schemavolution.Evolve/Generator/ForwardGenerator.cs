@@ -10,13 +10,13 @@ namespace Schemavolution.Evolve.Generator
     class ForwardGenerator : IGraphVisitor
     {
         private readonly string _databaseName;
-        private readonly SqlServerProvider _provider;
+        private readonly IDatabaseProvider _provider;
 
         private EvolutionDelta _difference;
         private ImmutableList<string> _sql = ImmutableList<string>.Empty;
         private ImmutableStack<Gene> _working = ImmutableStack<Gene>.Empty;
 
-        public ForwardGenerator(string databaseName, EvolutionDelta difference, SqlServerProvider provider)
+        public ForwardGenerator(string databaseName, EvolutionDelta difference, IDatabaseProvider provider)
         {
             _databaseName = databaseName;
             _provider = provider;

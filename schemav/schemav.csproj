@@ -62,7 +62,7 @@
       <Name>Schemavolution.Evolve</Name>
     </ProjectReference>
     <ProjectReference Include="..\Schemavolution.Specification\Schemavolution.Specification.csproj">
-      <Project>{A7D7C6E3-AA73-4FF0-B303-1B828B2E3EFB}</Project>
+      <Project>{a7d7c6e3-aa73-4ff0-b303-1b828b2e3efb}</Project>
       <Name>Schemavolution.Specification</Name>
     </ProjectReference>
   </ItemGroup>

@@ -1,11 +1,10 @@
-﻿using Schemavolution.Evolve.Loader;
+﻿using Newtonsoft.Json;
+using Schemavolution.Evolve.Executor;
+using Schemavolution.Evolve.Loader;
+using Schemavolution.Evolve.Providers;
 using Schemavolution.Specification;
 using Schemavolution.Specification.Implementation;
-using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 
@@ -15,23 +14,32 @@ namespace Schemavolution.Evolve
     {
         private readonly string _databaseName;
         private readonly string _fileName;
-        private readonly string _masterConnectionString;
         private readonly IGenome _genome;
+        private readonly IDatabaseProvider _provider;
+        private readonly IDatabaseExecutor _executor;
 
-        public DatabaseEvolver(string databaseName, string fileName, string masterConnectionString, IGenome genome)
+        public static DatabaseEvolver ForSqlServer(string databaseName, string masterConnectionString, IGenome genome)
+        {
+            return new DatabaseEvolver(databaseName, null, genome, new SqlServerProvider(), new SqlServerExecutor(masterConnectionString));
+        }
+
+        public static DatabaseEvolver ForSqlServerLocalDb(string databaseName, string filename, string masterConnectionString, IGenome genome)
+        {
+            return new DatabaseEvolver(databaseName, filename, genome, new SqlServerProvider(), new SqlServerExecutor(masterConnectionString));
+        }
+
+        public static DatabaseEvolver ForPostgreSQL(string databaseName, string masterConnectionString, IGenome genome)
+        {
+            return new DatabaseEvolver(databaseName, null, genome, new PostgreSqlProvider(), new PostgreSqlExecutor(masterConnectionString));
+        }
+
+        private DatabaseEvolver(string databaseName, string fileName, IGenome genome, IDatabaseProvider provider, IDatabaseExecutor executor)
         {
             _databaseName = databaseName;
             _fileName = fileName;
-            _masterConnectionString = masterConnectionString;
             _genome = genome;
-        }
-
-        public DatabaseEvolver(string databaseName, string masterConnectionString, IGenome genome)
-        {
-            _databaseName = databaseName;
-            _fileName = null;
-            _masterConnectionString = masterConnectionString;
-            _genome = genome;
+            _provider = provider;
+            _executor = executor;
         }
 
         public bool EvolveDatabase()
@@ -40,36 +48,14 @@ namespace Schemavolution.Evolve
 
             if (evolutionHistory.Empty)
             {
-                string[] initialize =
-                {
-                    _fileName != null ?
-                    $@"CREATE DATABASE [{_databaseName}]
-                        ON (NAME = '{_databaseName}',
-                        FILENAME = '{_fileName}')" :
-                    $"CREATE DATABASE [{_databaseName}]",
-                    $@"CREATE TABLE [{_databaseName}].[dbo].[__EvolutionHistory](
-                        [GeneId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-                        [Type] VARCHAR(50) NOT NULL,
-                        [HashCode] VARBINARY(32) NOT NULL,
-                        [Attributes] NVARCHAR(MAX) NOT NULL,
-	                    INDEX [IX_EvolutionHistory_HashCode] UNIQUE ([HashCode]))",
-                    $@"CREATE TABLE [{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite] (
-	                    [GeneId] INT NOT NULL,
-	                    [Role] NVARCHAR(50) NOT NULL,
-                        [Ordinal] INT NOT NULL,
-	                    [PrerequisiteGeneId] INT NOT NULL,
-	                    INDEX [IX_EvolutionHistoryPrerequisite_GeneId] ([GeneId]),
-	                    FOREIGN KEY ([GeneId]) REFERENCES [{_databaseName}].[dbo].[__EvolutionHistory],
-	                    INDEX [IX_EvolutionHistoryPrerequisite_PrerequisiteMigrationId] ([PrerequisiteGeneId]),
-	                    FOREIGN KEY ([PrerequisiteGeneId]) REFERENCES [{_databaseName}].[dbo].[__EvolutionHistory])"
-                };
-                ExecuteSqlCommands(initialize);
+                string[] initialize = _provider.GenerateInitialization(_databaseName, _fileName);
+                _executor.ExecuteSqlCommands(initialize);
             }
 
-            var generator = new SqlGenerator(_genome, evolutionHistory);
+            var generator = new SqlGenerator(_genome, evolutionHistory, _provider);
 
             var sql = generator.Generate(_databaseName);
-            ExecuteSqlCommands(sql);
+            _executor.ExecuteSqlCommands(sql);
 
             return sql.Any();
         }
@@ -77,63 +63,26 @@ namespace Schemavolution.Evolve
         public bool DevolveDatabase()
         {
             var evolutionHistory = LoadEvolutionHistory();
-            var generator = new SqlGenerator(_genome, evolutionHistory);
+            var generator = new SqlGenerator(_genome, evolutionHistory, _provider);
             var sql = generator.GenerateRollbackSql(_databaseName);
 
-            ExecuteSqlCommands(sql);
+            _executor.ExecuteSqlCommands(sql);
 
             return sql.Any();
         }
 
         public void DestroyDatabase()
         {
-            var fileNames = ExecuteSqlQuery($@"
-                SELECT [physical_name] FROM [sys].[master_files]
-                WHERE [database_id] = DB_ID('{_databaseName}')",
-                row => (string)row["physical_name"]);
-
-            if (fileNames.Any())
-            {
-                ExecuteSqlCommand($@"
-                    ALTER DATABASE [{_databaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-                    EXEC sp_detach_db '{_databaseName}'");
-
-                fileNames.ForEach(File.Delete);
-            }
+            _executor.DestroyDatabase(_databaseName);
         }
 
         private EvolutionHistory LoadEvolutionHistory()
         {
-            var ids = ExecuteSqlQuery($"SELECT database_id FROM master.sys.databases WHERE name = '{_databaseName}'",
-                row => (int)row["database_id"]);
-            if (ids.Any())
+            if (_executor.DatabaseExists(_databaseName))
             {
-                string upgrade = $@"IF COL_LENGTH('[{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite]', 'Ordinal') IS NULL
-                    BEGIN
-	                    ALTER TABLE [{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite]
-	                    ADD [Ordinal] INT NOT NULL
-	                    CONSTRAINT [DF_EvolutionHistoryPrerequisite_Ordinal] DEFAULT (1)
+                _executor.UpgradeDatabase(_databaseName);
 
-	                    ALTER TABLE [{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite]
-                        DROP CONSTRAINT [DF_EvolutionHistoryPrerequisite_Ordinal]
-                    END";
-                ExecuteSqlCommand(upgrade);
-
-                var rows = ExecuteSqlQuery($@"SELECT h.[Type], h.[HashCode], h.[Attributes], j.[Role], p.[HashCode] AS [PrerequisiteHashCode]
-                        FROM [{_databaseName}].[dbo].[__EvolutionHistory] h
-                        LEFT JOIN [{_databaseName}].[dbo].[__EvolutionHistoryPrerequisite] j
-                          ON h.GeneId = j.GeneId
-                        LEFT JOIN [{_databaseName}].[dbo].[__EvolutionHistory] p
-                          ON j.PrerequisiteGeneId = p.GeneId
-                        ORDER BY h.GeneId, j.Role, j.Ordinal, p.GeneId",
-                    row => new EvolutionHistoryRow
-                    {
-                        Type = LoadString(row["Type"]),
-                        HashCode = LoadBigInteger(row["HashCode"]),
-                        Attributes = LoadString(row["Attributes"]),
-                        Role = LoadString(row["Role"]),
-                        PrerequisiteHashCode = LoadBigInteger(row["PrerequisiteHashCode"])
-                    });
+                var rows = _executor.LoadEvolutionHistory(_databaseName);
 
                 return EvolutionHistory.LoadMementos(LoadMementos(rows));
             }
@@ -200,77 +149,6 @@ namespace Schemavolution.Evolve
                 yield return enumerator.Current.PrerequisiteHashCode;
                 enumerator.MoveNext();
             } while (enumerator.More && enumerator.Current.HashCode == hashCode && enumerator.Current.Role == role);
-        }
-
-        private static string LoadString(object value)
-        {
-            if (value is DBNull)
-                return null;
-            else
-                return (string)value;
-        }
-
-        private static BigInteger LoadBigInteger(object value)
-        {
-            if (value is DBNull)
-                return BigInteger.Zero;
-            else
-                return new BigInteger(((byte[])value).Reverse().ToArray());
-        }
-
-        private void ExecuteSqlCommand(string commandText)
-        {
-            using (var connection = new SqlConnection(_masterConnectionString))
-            {
-                connection.Open();
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = commandText;
-                    command.ExecuteNonQuery();
-                }
-            }
-        }
-
-        private void ExecuteSqlCommands(IEnumerable<string> commands)
-        {
-            if (commands.Any())
-            {
-                using (var connection = new SqlConnection(_masterConnectionString))
-                {
-                    connection.Open();
-                    foreach (var commandText in commands)
-                    {
-                        using (var command = connection.CreateCommand())
-                        {
-                            command.CommandText = commandText;
-                            command.ExecuteNonQuery();
-                        }
-                    }
-                }
-            }
-        }
-
-        private List<T> ExecuteSqlQuery<T>(
-            string queryText,
-            Func<SqlDataReader, T> read)
-        {
-            var result = new List<T>();
-            using (var connection = new SqlConnection(_masterConnectionString))
-            {
-                connection.Open();
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = queryText;
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            result.Add(read(reader));
-                        }
-                    }
-                }
-            }
-            return result;
         }
     }
 }
