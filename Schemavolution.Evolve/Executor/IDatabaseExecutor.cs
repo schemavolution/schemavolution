@@ -5,10 +5,11 @@ namespace Schemavolution.Evolve.Executor
 {
     interface IDatabaseExecutor
     {
-        bool DatabaseExists(string databaseName);
-        void UpgradeDatabase(string databaseName);
-        void DestroyDatabase(string databaseName);
-        List<EvolutionHistoryRow> LoadEvolutionHistory(string databaseName);
+        bool DatabaseExists();
+        void CreateDatabase(string fileName);
+        void UpgradeDatabase();
+        void DestroyDatabase();
+        List<EvolutionHistoryRow> LoadEvolutionHistory();
         void ExecuteSqlCommands(IEnumerable<string> commands);
     }
 }

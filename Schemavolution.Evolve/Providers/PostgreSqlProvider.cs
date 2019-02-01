@@ -5,6 +5,30 @@ namespace Schemavolution.Evolve.Providers
 {
     class PostgreSqlProvider : IDatabaseProvider
     {
+        public string[] GenerateInitialization(string databaseName, string fileName)
+        {
+            return new string[]{
+                $@"CREATE DATABASE ""{databaseName}"";",
+                $@"\connect {databaseName}",
+                $@"CREATE TABLE ""__evolution_history"" (
+                    ""gene_id"" serial PRIMARY KEY,
+                    ""type"" varchar(50) NOT NULL,
+                    ""hash_code"" bit varying(256) NOT NULL UNIQUE,
+                    ""attributes"" jsonb
+                );",
+                @"CREATE TABLE ""__evolution_history_prerequisite"" (
+                    ""gene_id"" int NOT NULL REFERENCES ""__evolution_history"",
+                    ""role"" varchar(50) NOT NULL,
+                    ""ordinal"" int NOT NULL,
+                    ""prerequisite_gene_id"" int NOT NULL REFERENCES ""__evolution_history""
+                );",
+                @"CREATE INDEX ""__evolution_history_prerequisite_gene_id_idx""
+                    ON ""__evolution_history_prerequisite""(""gene_id"");",
+                @"CREATE INDEX ""__evolution_history_prerequisite_prerequisite_gene_id_idx""
+                    ON ""__evolution_history_prerequisite""(""prerequisite_gene_id"");"
+            };
+        }
+
         public string GenerateColumnDefinition(string columnName, string typeDescriptor, bool nullable)
         {
             throw new System.NotImplementedException("GenerateColumnDefinition");
@@ -63,11 +87,6 @@ namespace Schemavolution.Evolve.Providers
         public string GenerateIndexDefinition(string tableName, IEnumerable<string> columnNames)
         {
             throw new System.NotImplementedException("GenerateIndexDefinition");
-        }
-
-        public string[] GenerateInitialization(string databaseName, string fileName)
-        {
-            throw new System.NotImplementedException("GenerateInitialization");
         }
 
         public string GenerateInsertStatement(string databaseName, IEnumerable<GeneMemento> genes)

@@ -22,11 +22,11 @@ namespace Schemavolution.Evolve
         {
             if (genome.Rdbms == RdbmsIdentifier.MSSqlServer)
             {
-                return new DatabaseEvolver(databaseName, filename, genome, new SqlServerProvider(), new SqlServerExecutor(masterConnectionString));
+                return new DatabaseEvolver(databaseName, filename, genome, new SqlServerProvider(), new SqlServerExecutor(masterConnectionString, databaseName));
             }
             else if (genome.Rdbms == RdbmsIdentifier.PostgreSQL)
             {
-                return new DatabaseEvolver(databaseName, null, genome, new PostgreSqlProvider(), new PostgreSqlExecutor(masterConnectionString));
+                return new DatabaseEvolver(databaseName, null, genome, new PostgreSqlProvider(), new PostgreSqlExecutor(masterConnectionString, databaseName));
             }
             else
             {
@@ -45,13 +45,11 @@ namespace Schemavolution.Evolve
 
         public bool EvolveDatabase()
         {
-            var evolutionHistory = LoadEvolutionHistory();
-
-            if (evolutionHistory.Empty)
+            if (!_executor.DatabaseExists())
             {
-                string[] initialize = _provider.GenerateInitialization(_databaseName, _fileName);
-                _executor.ExecuteSqlCommands(initialize);
+                _executor.CreateDatabase(_fileName);
             }
+            var evolutionHistory = LoadEvolutionHistory();
 
             var generator = new SqlGenerator(_genome, evolutionHistory, _provider);
 
@@ -74,16 +72,16 @@ namespace Schemavolution.Evolve
 
         public void DestroyDatabase()
         {
-            _executor.DestroyDatabase(_databaseName);
+            _executor.DestroyDatabase();
         }
 
         private EvolutionHistory LoadEvolutionHistory()
         {
-            if (_executor.DatabaseExists(_databaseName))
+            if (_executor.DatabaseExists())
             {
-                _executor.UpgradeDatabase(_databaseName);
+                _executor.UpgradeDatabase();
 
-                var rows = _executor.LoadEvolutionHistory(_databaseName);
+                var rows = _executor.LoadEvolutionHistory();
 
                 return EvolutionHistory.LoadMementos(LoadMementos(rows));
             }

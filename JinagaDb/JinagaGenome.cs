@@ -9,7 +9,10 @@ namespace JinagaDb
 
         public void AddGenes(DatabaseSpecification databaseSpecification)
         {
-            throw new NotImplementedException();
+            var p = databaseSpecification.UseSchema("public");
+
+            var edge = p.CreateTable("edge");
+            edge.CreateStringColumn("successor_type", 50);
         }
     }
 }
