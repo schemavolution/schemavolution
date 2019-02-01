@@ -3,7 +3,7 @@
     "JinagaDb": {
       "commandName": "Executable",
       "executablePath": "C:\\Projects\\schemavolution\\schemav\\bin\\Debug\\schemav.exe",
-      "commandLineArgs": ".\\JinagaDb\\bin\\Debug\\netstandard2.0\\JinagaDb.dll myapplication \"User ID=postgres; Host=localhost; Port=5432; Database=postgres\" -pg"
+      "commandLineArgs": "JinagaDb.dll testmigration \"User ID=postgres; Password=hubert!1; Host=localhost; Port=5432; Database=postgres\""
     }
   }
 }

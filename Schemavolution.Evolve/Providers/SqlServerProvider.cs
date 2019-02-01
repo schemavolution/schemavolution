@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace Schemavolution.Evolve.Providers
 {
-    class SqlServerProvider : IDatabaseProvider
+    public class SqlServerProvider : IDatabaseProvider
     {
         public string[] GenerateInitialization(string databaseName, string fileName)
         {

@@ -5,6 +5,8 @@ namespace Mathematicians
 {
     public class Genome : IGenome
     {
+        public RdbmsIdentifier Rdbms => RdbmsIdentifier.MSSqlServer;
+
         public void AddGenes(DatabaseSpecification db)
         {
             var dbo = db.UseSchema("dbo");

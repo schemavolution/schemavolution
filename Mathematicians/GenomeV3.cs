@@ -8,6 +8,8 @@ namespace Mathematicians
     // the tests about rolling back an evolution.
     public class GenomeV3 : IGenome
     {
+        public RdbmsIdentifier Rdbms => RdbmsIdentifier.MSSqlServer;
+
         public void AddGenes(DatabaseSpecification db)
         {
             var dbo = db.UseSchema("dbo");

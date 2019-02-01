@@ -17,7 +17,7 @@ namespace Mathematicians.Web.App_Start
 
             string fileName = server.MapPath("~/App_Data/Mathematicians.mdf");
             string databaseName = "Mathematicians";
-            var evolver = new DatabaseEvolver(
+            var evolver = DatabaseEvolver.ForGenome(
                 databaseName,
                 fileName,
                 master.ConnectionString,

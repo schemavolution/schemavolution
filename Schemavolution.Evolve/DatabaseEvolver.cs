@@ -18,19 +18,20 @@ namespace Schemavolution.Evolve
         private readonly IDatabaseProvider _provider;
         private readonly IDatabaseExecutor _executor;
 
-        public static DatabaseEvolver ForSqlServer(string databaseName, string masterConnectionString, IGenome genome)
+        public static DatabaseEvolver ForGenome(string databaseName, string filename, string masterConnectionString, IGenome genome)
         {
-            return new DatabaseEvolver(databaseName, null, genome, new SqlServerProvider(), new SqlServerExecutor(masterConnectionString));
-        }
-
-        public static DatabaseEvolver ForSqlServerLocalDb(string databaseName, string filename, string masterConnectionString, IGenome genome)
-        {
-            return new DatabaseEvolver(databaseName, filename, genome, new SqlServerProvider(), new SqlServerExecutor(masterConnectionString));
-        }
-
-        public static DatabaseEvolver ForPostgreSQL(string databaseName, string masterConnectionString, IGenome genome)
-        {
-            return new DatabaseEvolver(databaseName, null, genome, new PostgreSqlProvider(), new PostgreSqlExecutor(masterConnectionString));
+            if (genome.Rdbms == RdbmsIdentifier.MSSqlServer)
+            {
+                return new DatabaseEvolver(databaseName, filename, genome, new SqlServerProvider(), new SqlServerExecutor(masterConnectionString));
+            }
+            else if (genome.Rdbms == RdbmsIdentifier.PostgreSQL)
+            {
+                return new DatabaseEvolver(databaseName, null, genome, new PostgreSqlProvider(), new PostgreSqlExecutor(masterConnectionString));
+            }
+            else
+            {
+                throw new System.ArgumentException($"Unknown RDBMS {genome.Rdbms}");
+            }
         }
 
         private DatabaseEvolver(string databaseName, string fileName, IGenome genome, IDatabaseProvider provider, IDatabaseExecutor executor)

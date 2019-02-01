@@ -8,6 +8,8 @@ namespace Mathematicians
     // I created a second genome class.
     public class GenomeV2 : IGenome
     {
+        public RdbmsIdentifier Rdbms => RdbmsIdentifier.MSSqlServer;
+
         public void AddGenes(DatabaseSpecification db)
         {
             var dbo = db.UseSchema("dbo");

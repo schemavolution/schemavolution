@@ -9,30 +9,18 @@ namespace schemav
 {
     class Program
     {
-        const int MSSqlServer = 0x01;
-        const int PostgreSQL = 0x02;
-
         static void Main(string[] args)
         {
             var flags = args.Where(a => a.StartsWith("-")).ToArray();
             var parameters = args.Where(a => !a.StartsWith("-")).ToArray();
             var force = flags.Contains("-f");
-            var provider =
-                (flags.Contains("-pg") ? PostgreSQL : 0) |
-                (flags.Contains("-ms") ? MSSqlServer : 0);
 
-            if (parameters.Length == 3 &&
-                (provider == PostgreSQL || provider == MSSqlServer))
+            if (parameters.Length == 3)
             {
                 string assemblyPath = parameters[0];
                 string databaseName = parameters[1];
                 string masterConnectionString = parameters[2];
-                EvolveDatabase(assemblyPath, force, g =>
-                    provider == MSSqlServer ? DatabaseEvolver
-                        .ForSqlServer(databaseName, masterConnectionString, g) :
-                    provider == PostgreSQL ? DatabaseEvolver
-                        .ForPostgreSQL(databaseName, masterConnectionString, g) :
-                    null);
+                EvolveDatabase(assemblyPath, force, databaseName, masterConnectionString);
             }
             else
             {
@@ -44,12 +32,10 @@ namespace schemav
                 Console.WriteLine("  Flags:");
                 Console.WriteLine("    -f  Force (optional) - Devolve the database.");
                 Console.WriteLine("                           Required after genes have been deleted.");
-                Console.WriteLine("    -pg PostgreSQL       - Exactly one provider must be selected.");
-                Console.WriteLine("    -ms MS SQL Server");
             }
         }
 
-        private static void EvolveDatabase(string assemblyPath, bool force, Func<IGenome, DatabaseEvolver> createEvolver)
+        private static void EvolveDatabase(string assemblyPath, bool force, string databaseName, string masterConnectionString)
         {
             string assemblyDirectory = Directory.GetParent(assemblyPath).FullName;
             var resolver = new AssemblyResolver(AppDomain.CurrentDomain, assemblyDirectory);
@@ -67,7 +53,7 @@ namespace schemav
                 var genomeTypeName = genomeTypes.Single().FullName;
                 var genome = (IGenome)assembly.CreateInstance(genomeTypeName);
 
-                var evolver = createEvolver(genome);
+                var evolver = DatabaseEvolver.ForGenome(databaseName, null, masterConnectionString, genome);
                 if (force)
                 {
                     if (evolver.DevolveDatabase())

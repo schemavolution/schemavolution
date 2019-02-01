@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Schemavolution.Evolve;
+using Schemavolution.Evolve.Providers;
 using Schemavolution.Specification;
 using Schemavolution.Specification.Implementation;
 using System;
@@ -130,13 +131,13 @@ namespace Mathematicians.UnitTests
 
         private static string[] WhenGenerateSql(IGenome genome, EvolutionHistory evolutionHistory)
         {
-            var sqlGenerator = new SqlGenerator(genome, evolutionHistory);
+            var sqlGenerator = new SqlGenerator(genome, evolutionHistory, new SqlServerProvider());
             return sqlGenerator.Generate("Mathematicians");
         }
 
         private static string[] WhenGenerateRollbackSql(IGenome genome, EvolutionHistory evolutionHistory)
         {
-            var sqlGenerator = new SqlGenerator(genome, evolutionHistory);
+            var sqlGenerator = new SqlGenerator(genome, evolutionHistory, new SqlServerProvider());
             return sqlGenerator.GenerateRollbackSql("Mathematicians");
         }
     }
