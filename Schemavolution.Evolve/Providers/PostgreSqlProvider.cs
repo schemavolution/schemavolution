@@ -1,77 +1,62 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 using Schemavolution.Specification.Implementation;
 
 namespace Schemavolution.Evolve.Providers
 {
     class PostgreSqlProvider : IDatabaseProvider
     {
-        public string[] GenerateInitialization(string databaseName, string fileName)
+        public string GenerateInsertStatement(string databaseName, IEnumerable<GeneMemento> genes)
         {
-            return new string[]{
-                $@"CREATE DATABASE ""{databaseName}"";",
-                $@"\connect {databaseName}",
-                $@"CREATE TABLE ""__evolution_history"" (
-                    ""gene_id"" serial PRIMARY KEY,
-                    ""type"" varchar(50) NOT NULL,
-                    ""hash_code"" bit varying(256) NOT NULL UNIQUE,
-                    ""attributes"" jsonb
-                );",
-                @"CREATE TABLE ""__evolution_history_prerequisite"" (
-                    ""gene_id"" int NOT NULL REFERENCES ""__evolution_history"",
-                    ""role"" varchar(50) NOT NULL,
-                    ""ordinal"" int NOT NULL,
-                    ""prerequisite_gene_id"" int NOT NULL REFERENCES ""__evolution_history""
-                );",
-                @"CREATE INDEX ""__evolution_history_prerequisite_gene_id_idx""
-                    ON ""__evolution_history_prerequisite""(""gene_id"");",
-                @"CREATE INDEX ""__evolution_history_prerequisite_prerequisite_gene_id_idx""
-                    ON ""__evolution_history_prerequisite""(""prerequisite_gene_id"");"
-            };
+            string[] values = genes.Select(gene => GenerateGeneValue(gene)).ToArray();
+            var insert = $@"INSERT INTO ""public"".""__evolution_history""
+    (""type"", ""hash_code"", ""attributes"")
+    VALUES{String.Join(",", values)};";
+            return insert;
         }
 
-        public string GenerateColumnDefinition(string columnName, string typeDescriptor, bool nullable)
+        private string GenerateGeneValue(GeneMemento gene)
         {
-            throw new System.NotImplementedException("GenerateColumnDefinition");
+            string attributes = JsonConvert.SerializeObject(gene.Attributes);
+            string hex = $@"'\x{gene.HashCode.ToString("X64")}'::bytea";
+            return $@"
+    ('{gene.Type}', {hex}, '{attributes.Replace("'", "''")}'::jsonb)";
         }
 
-        public string[] GenerateCreateColumn(string databaseName, string schemaName, string tableName, string columnName, string typeDescriptor, bool nullable)
+        public string GeneratePrerequisiteInsertStatements(string databaseName, IEnumerable<GeneMemento> genes)
         {
-            throw new System.NotImplementedException("GenerateCreateColumn");
+            var joins =
+                from gene in genes
+                from role in gene.Prerequisites
+                from prerequisite in role.Value
+                select new { GeneHashCode = gene.HashCode, Role = role.Key, PrerequisiteHashCode = prerequisite };
+            string[] values = joins.Select((join, i) => GeneratePrerequisiteSelect(databaseName, join.GeneHashCode, join.Role, i + 1, join.PrerequisiteHashCode)).ToArray();
+            string sql = $@"INSERT INTO ""public"".""__evolution_history_prerequisite""
+    (""gene_id"", ""role"", ""ordinal"", ""prerequisite_gene_id""){string.Join(@"
+UNION ALL", values)};";
+            return sql;
         }
 
-        public string[] GenerateCreateIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
+        private string GeneratePrerequisiteSelect(string databaseName, BigInteger geneHashCode, string role, int ordinal, BigInteger prerequisiteHashCode)
         {
-            throw new System.NotImplementedException("GenerateCreateIndex");
-        }
-
-        public string[] GenerateCreatePrimaryKey(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
-        {
-            throw new System.NotImplementedException("GenerateCreatePrimaryKey");
+            return $@"
+SELECT m.gene_id, '{role}', {ordinal}, p.gene_id
+FROM ""public"".""__evolution_history"" m,
+     ""public"".""__evolution_history"" p
+WHERE m.hash_code = '\x{geneHashCode.ToString("X64")}'::bytea AND p.hash_code = '\x{prerequisiteHashCode.ToString("X64")}'::bytea";
         }
 
         public string GenerateCreateTable(string databaseName, string schemaName, string tableName, IEnumerable<string> definitions)
         {
-            throw new System.NotImplementedException("GenerateCreateTable");
-        }
-
-        public string[] GenerateCreateUniqueIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
-        {
-            throw new System.NotImplementedException("GenerateCreateUniqueIndex");
-        }
-
-        public string[] GenerateDropColumn(string databaseName, string schemaName, string tableName, string columnName)
-        {
-            throw new System.NotImplementedException("GenerateDropColumn");
-        }
-
-        public string[] GenerateDropIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
-        {
-            throw new System.NotImplementedException("GenerateDropIndex");
-        }
-
-        public string[] GenerateDropPrimaryKey(string databaseName, string schemaName, string tableName)
-        {
-            throw new System.NotImplementedException("GenerateDropPrimaryKey");
+            string head = $@"CREATE TABLE ""{schemaName}"".""{tableName}""";
+            if (definitions.Any())
+                return $"{head}({string.Join(",", definitions)})";
+            else
+                return head;
         }
 
         public string GenerateDropTable(string databaseName, string schemaName, string tableName)
@@ -79,9 +64,53 @@ namespace Schemavolution.Evolve.Providers
             throw new System.NotImplementedException("GenerateDropTable");
         }
 
-        public string[] GenerateDropUniqueIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
+        public string[] GenerateCreateColumn(string databaseName, string schemaName, string tableName, string columnName, string typeDescriptor, bool nullable)
         {
-            throw new System.NotImplementedException("GenerateDropUniqueIndex");
+            throw new System.NotImplementedException("GenerateCreateColumn");
+        }
+
+        public string[] GenerateDropColumn(string databaseName, string schemaName, string tableName, string columnName)
+        {
+            throw new System.NotImplementedException("GenerateDropColumn");
+        }
+
+        public string GenerateColumnDefinition(string columnName, string typeDescriptor, bool nullable)
+        {
+            return $"\r\n    \"{columnName}\" {TranslateTypeDescriptor(typeDescriptor)} {(nullable ? "NULL" : "NOT NULL")}";
+        }
+
+        private object TranslateTypeDescriptor(string typeDescriptor)
+        {
+            if (typeDescriptor.StartsWith("NVARCHAR"))
+            {
+                return new Regex("NVARCHAR").Replace(typeDescriptor, "character varying");
+            }
+            throw new NotImplementedException();
+        }
+
+        public string[] GenerateCreatePrimaryKey(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
+        {
+            throw new System.NotImplementedException("GenerateCreatePrimaryKey");
+        }
+
+        public string[] GenerateDropPrimaryKey(string databaseName, string schemaName, string tableName)
+        {
+            throw new System.NotImplementedException("GenerateDropPrimaryKey");
+        }
+
+        public string GeneratePrimaryKeyDefinition(string tableName, IEnumerable<string> columnNames)
+        {
+            throw new System.NotImplementedException("GeneratePrimaryKeyDefinition");
+        }
+
+        public string[] GenerateCreateIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
+        {
+            throw new System.NotImplementedException("GenerateCreateIndex");
+        }
+
+        public string[] GenerateDropIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
+        {
+            throw new System.NotImplementedException("GenerateDropIndex");
         }
 
         public string GenerateIndexDefinition(string tableName, IEnumerable<string> columnNames)
@@ -89,19 +118,14 @@ namespace Schemavolution.Evolve.Providers
             throw new System.NotImplementedException("GenerateIndexDefinition");
         }
 
-        public string GenerateInsertStatement(string databaseName, IEnumerable<GeneMemento> genes)
+        public string[] GenerateCreateUniqueIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
         {
-            throw new System.NotImplementedException("GenerateInsertStatement");
+            throw new System.NotImplementedException("GenerateCreateUniqueIndex");
         }
 
-        public string GeneratePrerequisiteInsertStatements(string databaseName, IEnumerable<GeneMemento> genes)
+        public string[] GenerateDropUniqueIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
         {
-            throw new System.NotImplementedException("GeneratePrerequisiteInsertStatements");
-        }
-
-        public string GeneratePrimaryKeyDefinition(string tableName, IEnumerable<string> columnNames)
-        {
-            throw new System.NotImplementedException("GeneratePrimaryKeyDefinition");
+            throw new System.NotImplementedException("GenerateDropUniqueIndex");
         }
 
         public string GenerateUniqueIndexDefinition(string tableName, IEnumerable<string> columnNames)

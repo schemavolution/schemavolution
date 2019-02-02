@@ -50,7 +50,7 @@ namespace Schemavolution.Evolve.Executor
                 $@"CREATE TABLE ""__evolution_history"" (
                     ""gene_id"" serial PRIMARY KEY,
                     ""type"" varchar(50) NOT NULL,
-                    ""hash_code"" bit varying(256) NOT NULL UNIQUE,
+                    ""hash_code"" bytea NOT NULL UNIQUE,
                     ""attributes"" jsonb
                 );",
                 @"CREATE TABLE ""__evolution_history_prerequisite"" (

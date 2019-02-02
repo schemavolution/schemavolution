@@ -77,18 +77,11 @@ namespace Schemavolution.Evolve
 
         private EvolutionHistory LoadEvolutionHistory()
         {
-            if (_executor.DatabaseExists())
-            {
-                _executor.UpgradeDatabase();
+            _executor.UpgradeDatabase();
 
-                var rows = _executor.LoadEvolutionHistory();
+            var rows = _executor.LoadEvolutionHistory();
 
-                return EvolutionHistory.LoadMementos(LoadMementos(rows));
-            }
-            else
-            {
-                return new EvolutionHistory();
-            }
+            return EvolutionHistory.LoadMementos(LoadMementos(rows));
         }
 
         private static IEnumerable<GeneMemento> LoadMementos(

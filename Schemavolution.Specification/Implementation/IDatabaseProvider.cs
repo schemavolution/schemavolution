@@ -1,13 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using Schemavolution.Specification.Genes;
-using Schemavolution.Specification.Implementation;
+﻿using Schemavolution.Specification.Implementation;
+using System.Collections.Generic;
 
 namespace Schemavolution.Evolve.Providers
 {
     public interface IDatabaseProvider
     {
-        string[] GenerateInitialization(string databaseName, string fileName);
         string GenerateInsertStatement(string databaseName, IEnumerable<GeneMemento> genes);
         string GeneratePrerequisiteInsertStatements(string databaseName, IEnumerable<GeneMemento> genes);
         string GenerateCreateTable(string databaseName, string schemaName, string tableName, IEnumerable<string> definitions);
