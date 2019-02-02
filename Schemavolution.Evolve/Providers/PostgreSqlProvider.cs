@@ -163,7 +163,14 @@ WHERE m.hash_code = '\x{geneHashCode.ToString("X64")}'::bytea AND p.hash_code = 
 
         public string[] GenerateCreateUniqueIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
         {
-            throw new System.NotImplementedException("GenerateCreateUniqueIndex");
+            string indexTail = string.Join("_", columnNames.ToArray());
+            string columnList = string.Join(", ", columnNames.Select(c => $"\"{c}\"").ToArray());
+            string[] sql =
+            {
+                $@"CREATE UNIQUE INDEX ""{tableName}_{indexTail}_ux"" ON ""{schemaName}"".""{tableName}"" ({columnList})"
+            };
+
+            return sql;
         }
 
         public string[] GenerateDropUniqueIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)

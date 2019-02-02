@@ -12,8 +12,18 @@ namespace JinagaDb
             var p = databaseSpecification.UseSchema("public");
 
             var edge = p.CreateTable("edge");
-            edge.CreateStringColumn("successor_type", 50);
-            edge.CreateStringColumn("successor_hash", 100);
+            var successorType = edge.CreateStringColumn("successor_type", 50);
+            var successorHash = edge.CreateStringColumn("successor_hash", 100);
+            var predecessorType = edge.CreateStringColumn("predecessor_type", 50);
+            var predecessorHash = edge.CreateStringColumn("predecessor_hash", 100);
+            var role = edge.CreateStringColumn("role", 20);
+
+            edge.CreateUniqueIndex(
+                successorHash,
+                predecessorHash,
+                role,
+                successorType,
+                predecessorType);
         }
     }
 }
