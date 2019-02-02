@@ -128,6 +128,14 @@ WHERE m.hash_code = '\x{geneHashCode.ToString("X64")}'::bytea AND p.hash_code = 
             {
                 return new Regex("NVARCHAR").Replace(typeDescriptor, "character varying");
             }
+            else if (typeDescriptor.StartsWith("JSONB"))
+            {
+                return new Regex("JSONB").Replace(typeDescriptor, "jsonb");
+            }
+            else if (typeDescriptor.StartsWith("JSON"))
+            {
+                return new Regex("JSON").Replace(typeDescriptor, "json");
+            }
             throw new NotImplementedException();
         }
 
@@ -148,7 +156,14 @@ WHERE m.hash_code = '\x{geneHashCode.ToString("X64")}'::bytea AND p.hash_code = 
 
         public string[] GenerateCreateIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
         {
-            throw new System.NotImplementedException("GenerateCreateIndex");
+            string indexTail = string.Join("_", columnNames.ToArray());
+            string columnList = string.Join(", ", columnNames.Select(c => $"\"{c}\"").ToArray());
+            string[] sql =
+            {
+                $@"CREATE INDEX ""{tableName}_{indexTail}_idx"" ON ""{schemaName}"".""{tableName}"" ({columnList})"
+            };
+
+            return sql;
         }
 
         public string[] GenerateDropIndex(string databaseName, string schemaName, string tableName, IEnumerable<string> columnNames)
@@ -180,7 +195,11 @@ WHERE m.hash_code = '\x{geneHashCode.ToString("X64")}'::bytea AND p.hash_code = 
 
         public string GenerateUniqueIndexDefinition(string tableName, IEnumerable<string> columnNames)
         {
-            throw new System.NotImplementedException("GenerateUniqueIndexDefinition");
+            string indexTail = string.Join("_", columnNames.ToArray());
+            string columnList = string.Join(", ", columnNames.Select(c => $"\"{c}\"").ToArray());
+            string sql = $"\r\n    CONSTRAINT \"{tableName}_{indexTail}_ux\" UNIQUE ({columnList})";
+
+            return sql;
         }
     }
 }

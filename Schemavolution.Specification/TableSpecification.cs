@@ -176,6 +176,16 @@ namespace Schemavolution.Specification
             return CreateColumn(columnName, $"BINARY({length})", nullable);
         }
 
+        public ColumnSpecification CreateJsonColumn(string columnName, bool nullable = false)
+        {
+            return CreateColumn(columnName, "JSON", nullable);
+        }
+
+        public ColumnSpecification CreateJsonBinaryColumn(string columnName, bool nullable = false)
+        {
+            return CreateColumn(columnName, "JSONB", nullable);
+        }
+
         private ColumnSpecification CreateColumn(string columnName, string typeDescriptor, bool nullable)
         {
             var childGene = new CreateColumnGene(
