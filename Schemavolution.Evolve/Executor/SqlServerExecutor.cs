@@ -111,13 +111,17 @@ namespace Schemavolution.Evolve.Executor
                 using (var connection = new SqlConnection(_masterConnectionString))
                 {
                     connection.Open();
-                    foreach (var commandText in commands)
+                    using (var transaction = connection.BeginTransaction())
                     {
-                        using (var command = connection.CreateCommand())
+                        foreach (var commandText in commands)
                         {
-                            command.CommandText = commandText;
-                            command.ExecuteNonQuery();
+                            using (var command = connection.CreateCommand())
+                            {
+                                command.CommandText = commandText;
+                                command.ExecuteNonQuery();
+                            }
                         }
+                        transaction.Commit();
                     }
                 }
             }

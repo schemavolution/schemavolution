@@ -13,6 +13,7 @@ namespace JinagaDb
 
             var edge = p.CreateTable("edge");
             edge.CreateStringColumn("successor_type", 50);
+            edge.CreateStringColumn("successor_hash", 100);
         }
     }
 }

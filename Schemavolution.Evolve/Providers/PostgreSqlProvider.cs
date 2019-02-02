@@ -66,7 +66,50 @@ WHERE m.hash_code = '\x{geneHashCode.ToString("X64")}'::bytea AND p.hash_code = 
 
         public string[] GenerateCreateColumn(string databaseName, string schemaName, string tableName, string columnName, string typeDescriptor, bool nullable)
         {
-            throw new System.NotImplementedException("GenerateCreateColumn");
+            string[] identityTypes = { "INT IDENTITY" };
+            string[] numericTypes = { "BIGINT", "INT", "SMALLINT", "TINYINT", "MONEY", "SMALLMONEY", "DECIMAL", "FLOAT", "REAL" };
+            string[] dateTypes = { "DATETIME", "SMALLDATETIME", "DATETIME2", "TIME" };
+            string[] dateTimeOffsetTypes = { "DATETIMEOFFSET" };
+            string[] stringTypes = { "NVARCHAR", "NCHAR", "NTEXT" };
+            string[] asciiStringTypes = { "VARCHAR", "CHAR", "TEXT" };
+            string[] guidTypes = { "UNIQUEIDENTIFIER" };
+            string[] binaryTypes = { "BINARY", "VARBINARY" };
+
+            string defaultExpression =
+                nullable ? null :
+                identityTypes.Any(t => typeDescriptor.StartsWith(t)) ? null :
+                numericTypes.Any(t => typeDescriptor.StartsWith(t)) ? "0" :
+                dateTypes.Any(t => typeDescriptor.StartsWith(t)) ? "now() at time zone 'utc'" :
+                dateTimeOffsetTypes.Any(t => typeDescriptor.StartsWith(t)) ? "now() at time zone 'utc'" :
+                stringTypes.Any(t => typeDescriptor.StartsWith(t)) ? "''" :
+                asciiStringTypes.Any(t => typeDescriptor.StartsWith(t)) ? "''" :
+                guidTypes.Any(t => typeDescriptor.StartsWith(t)) ? "'00000000-0000-0000-0000-000000000000'" :
+                binaryTypes.Any(t => typeDescriptor.StartsWith(t)) ? "\x00::bytea" :
+                null;
+            if (defaultExpression == null)
+            {
+                string[] sql =
+                {
+                    $@"ALTER TABLE ""{schemaName}"".""{tableName}""
+    ADD ""{columnName}"" {TranslateTypeDescriptor(typeDescriptor)} {(nullable ? "NULL" : "NOT NULL")};"
+                };
+
+                return sql;
+            }
+            else
+            {
+                string[] sql =
+                {
+                    $@"ALTER TABLE ""{schemaName}"".""{tableName}""
+    ADD ""{columnName}"" {TranslateTypeDescriptor(typeDescriptor)} {(nullable ? "NULL" : "NOT NULL")}
+    DEFAULT ({defaultExpression});",
+                    $@"ALTER TABLE ""{schemaName}"".""{tableName}""
+    ALTER COLUMN ""{columnName}""
+    DROP DEFAULT;",
+                };
+
+                return sql;
+            }
         }
 
         public string[] GenerateDropColumn(string databaseName, string schemaName, string tableName, string columnName)
